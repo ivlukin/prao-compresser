@@ -6,10 +6,11 @@
 #define PRAO_COMPRESSER_READER_H
 
 #include <string>
+#include <vector>
 
 class Reader {
 public:
-    std::string readfile();
+    std::vector<std::string> readfile();
 
     double calibrate(std::string values);
 
