@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vector>
+#include "FileHeader.h"
+
 
 class Reader {
 public:
@@ -17,7 +19,9 @@ public:
     explicit Reader(std::string filename);
 
 private:
+    FileHeader readFileHeader(std::vector<std::string>  info);
     std::string filename;
+
 };
 
 #endif //PRAO_COMPRESSER_READER_H
