@@ -73,7 +73,7 @@ private:
     /* date and time of registration start */
     tm datetime_begin;
 
-    /* date and time of registration end */
+    /* date and time of registration end_datetime */
     tm datetime_end;
 
     /* list of active module */

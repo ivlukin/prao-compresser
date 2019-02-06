@@ -1,5 +1,6 @@
 #include "Reader.h"
 #include "Calibration/test.h"
+#include "Reader/testReader.h"
 //
 // Created by sorrow on 30.01.19.
 //
@@ -8,6 +9,7 @@ int main() {
     r.readfile();
 
     testCalibrationStorage();
+    testReader();
     return 0;
 }
 

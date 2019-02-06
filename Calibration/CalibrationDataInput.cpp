@@ -18,12 +18,19 @@ CalibrationDataInput::CalibrationDataInput(string &input) {
     datetime.tm_mon -= 1;
     time_internal = mktime(&datetime);
 
-    vector<float> data = vector<float>(33 * 48);
+    data = vector<float>();
+    data.reserve(48 * 33);
+
     float curr;
-    while(!in.eof()) {
-        in >> curr;
+    in >> curr;
+    do{
         data.push_back(curr);
-    }
+        curr = 0;
+        in >> curr;
+    } while (curr != 0);
+
+    if (data.size() != 7 * 48 && data.size() != 33 * 48)
+        throw logic_error("CalibrationDataInput read floats err");
 
     data.shrink_to_fit();
 }

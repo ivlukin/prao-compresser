@@ -12,7 +12,7 @@
 /// stores all known calibrations and extracts appropriate by datetime
 class CalibrationDataStorage{
 private:
-    set<CalibrationData> st;
+    set<CalibrationData*, CalibrationDataComp> st;
 
     int add_items_from_stream(istream &stream);
 
@@ -29,10 +29,10 @@ public:
     int add_items_from_file(string &path);
 
     /// get appropriate pre-calculated calibration signals by date
-    CalibrationData getCalibrationData_by_date(int year=2000, int mon=0, int day=0, int hour=0, int min=0, int sec=0);
+    CalibrationData* getCalibrationData_by_date(int year=2024, int mon=0, int day=0, int hour=0, int min=0, int sec=0);
 
     /// get appropriate pre-calculated calibration signals by time
-    CalibrationData getCalibrationData_by_time(time_t time);
+    CalibrationData* getCalibrationData_by_time(time_t time);
 
     void print();
 };

@@ -8,12 +8,12 @@
 void CalibrationData::calculateCoefs() {
     int size = small->data.size();
     float n, Tpr;
-    float *sm = small->data.data(), *bg = big->data.data(), *on_k = one_kelvin->data(), *zr = zero_level->data();
+    float *sm = small->data.data(), *bg = big->data.data();
     for (int i = 0; i < size; ++i) {
         n = bg[i] / sm[i];
         Tpr = (Tgs - n * Teq) / (n - 1);
-        on_k[i] = (bg[i] - sm[i]) / (Tgs - Teq);
-        zr[i] = sm[i] - on_k[i] * (Tpr + Teq);
+        one_kelvin[i] = (bg[i] - sm[i]) / (Tgs - Teq);
+        zero_level[i] = sm[i] - one_kelvin[i] * (Tpr + Teq);
     }
 
     small->data.clear();
@@ -22,24 +22,43 @@ void CalibrationData::calculateCoefs() {
 
 CalibrationData::CalibrationData(time_t time) : time_internal(time) { }
 
-CalibrationData::CalibrationData(CalibrationDataInput *data1, CalibrationDataInput *data2) {
-    small = data1->temperature == Teq ? data1 : data2;
-    big = data2->temperature == Tgs ? data2 : data1;
+CalibrationData::CalibrationData(string &data1, string &data2) {
+    small = new CalibrationDataInput(data1);
+    big = new CalibrationDataInput(data2);
+
+    if (small->temperature == Tgs && big->temperature == Teq)
+        swap(small, big);
+
+    if (small->time_internal != big->time_internal)
+        throw logic_error("small->time_internal != big->time_internal");
+
     time_internal = small->time_internal;
 
     unsigned int size = small->data.size();
-    one_kelvin = new vector<float>(size);
-    zero_level = new vector<float>(size);
+    one_kelvin = new float[size];
+    zero_level = new float[size];
 
     calculateCoefs();
 }
 
-const vector<float> CalibrationData::get_one_kelvin(){
-    return vector<float>(*one_kelvin);
+CalibrationData::~CalibrationData() {
+    if (small != nullptr)
+        delete(small);
+    if (big != nullptr)
+        delete(big);
+    if (one_kelvin != nullptr)
+        delete(one_kelvin);
+    if (zero_level != nullptr)
+        delete(zero_level);
+    //small = big = nullptr;
 }
 
-const vector<float> CalibrationData::get_zero_level(){
-    return vector<float>(*zero_level);
+float const * CalibrationData::get_one_kelvin(){
+    return one_kelvin;
+}
+
+float const * CalibrationData::get_zero_level(){
+    return zero_level;
 }
 
 void CalibrationData::print_date() {

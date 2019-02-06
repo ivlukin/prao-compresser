@@ -15,7 +15,7 @@ class CalibrationData {
 
 private:
     CalibrationDataInput *small = nullptr, *big = nullptr;
-    vector<float> *one_kelvin, *zero_level;
+    float *one_kelvin = nullptr, *zero_level = nullptr;
     time_t time_internal;
 
 /// precalculates one_kelvin and zero_level coefs used while calibration
@@ -25,17 +25,26 @@ public:
     static const int Tgs = 2400, Teq = 278; /// temperature of big signal and of small signal
 
     /// used to create instances to make searches by value "time"
-    CalibrationData(time_t time);
+    explicit CalibrationData(time_t time);
+    ~CalibrationData();
 
     /// small and big parsed calibration signals
-    CalibrationData(CalibrationDataInput *data1, CalibrationDataInput *data2);
+    CalibrationData(string &data1, string &data2);
 
-    const vector<float> get_one_kelvin();
-    const vector<float> get_zero_level();
+    float const * get_one_kelvin();
+    float const * get_zero_level();
 
     void print_date();
 
     bool operator<(const CalibrationData & c) const;
+};
+
+// comparator to be used in set<CalibrationData*>
+struct CalibrationDataComp
+{
+    bool operator()(const CalibrationData* lhs, const CalibrationData* rhs) const  {
+        return lhs->operator<(*rhs);
+    }
 };
 
 #endif //PRAO_COMPRESSER_CALIBRATIONDATA_H

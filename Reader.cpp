@@ -78,22 +78,22 @@ std::vector<std::string> Reader::readfile() {
                 break;
             }
             case 5: {
-                /* date begin */
+                /* date begin_datetime */
                 //TODO
                 break;
             }
             case 6: {
-                /* time begin */
+                /* time begin_datetime */
                 //TODO
                 break;
             }
             case 7: {
-                /* date end */
+                /* date end_datetime */
                 //TODO
                 break;
             }
             case 8: {
-                /* time end */
+                /* time end_datetime */
                 //TODO
                 break;
             }
