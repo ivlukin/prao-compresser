@@ -9,6 +9,8 @@
 #include "../Point/Point.h"
 #include "../Calibration/CalibrationData.h"
 
+#include <cstring>
+
 
 class DateReader{
     bool is_header_parsed = false;
@@ -20,15 +22,20 @@ class DateReader{
     float *calibration_on_k = nullptr,  *calibration_zr = nullptr;
 
     ifstream in;
+    static constexpr int BUFFER_SIZE = 0x1000 * 33 * 7 * 3 * 4; // disk sector size + count of big channels + count of small channels + 48 modules + coef ~11MB
+    int buffer_pointer = 0;
+    char *buffer = nullptr;
 
 
     void readHeader();
-    void calibratePoint(float * point);
+    //void calibratePoint(float * point);
+    void calibrateArrayPoints(float *point);
     void readNextPointInternal(float * to);
 
 public:
 
     explicit DateReader(string filepath);
+    ~DateReader();
     CalibrationData * setCalibrationData(CalibrationData *calibrationData);
 
     /// used only for testing

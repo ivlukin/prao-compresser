@@ -1,4 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
 project(prao-compresser)
 set(CMAKE_CXX_STANDARD 14)
-add_executable(prao-compresser main.cpp Reader.cpp Reader.h FileHeader.cpp FileHeader.h Calibration/CalibrationDataInput.h Calibration/CalibrationDataInput.cpp Calibration/CalibrationData.h Calibration/CalibrationData.cpp Calibration/CalibrationDataStorage.h Calibration/CalibrationDataStorage.cpp Calibration/test.cpp Calibration/test.h Reader/DataHeader.h Reader/DataHeader.cpp Reader/testReader.h Reader/testReader.cpp Reader/DateReader.h Reader/DateReader.cpp Point/Point.h Point/Point.cpp)
+add_executable(prao-compresser main.cpp Reader.cpp Reader.h FileHeader.cpp FileHeader.h Calibration/CalibrationDataInput.h Calibration/CalibrationDataInput.cpp Calibration/CalibrationData.h Calibration/CalibrationData.cpp Calibration/CalibrationDataStorage.h Calibration/CalibrationDataStorage.cpp Calibration/test.cpp Calibration/test.h Reader/DataHeader.h Reader/DataHeader.cpp Reader/testReader.h Reader/testReader.cpp Reader/DateReader.h Reader/DateReader.cpp Point/Point.h)

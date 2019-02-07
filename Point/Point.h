@@ -13,16 +13,10 @@ using namespace std;
 class PointBase {
 public:
     float data[7][48];
-    virtual void print(){
-        cout << 1;
-    }
 };
 
 class PointSmall : public PointBase {
 public:
-    void print() override {
-        cout << 2;
-    }
 };
 
 class PointBig : public PointBase  {
