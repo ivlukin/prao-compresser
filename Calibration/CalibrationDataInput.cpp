@@ -10,13 +10,11 @@ CalibrationDataInput::CalibrationDataInput(string &input) {
 
     istringstream in(input);
     string date, time;
-    in >> date >> time >> unk1 >> unk2 >> temperature >> unk3;
+    in >> date >> time >> MJD >> unk2 >> temperature >> unk3;
 
     sscanf(date.c_str(), "%d-%d-%d", &datetime.tm_year, &datetime.tm_mon, &datetime.tm_mday);
     sscanf(time.c_str(), "%d:%d:%d.", &datetime.tm_hour, &datetime.tm_min, &datetime.tm_sec);
-    datetime.tm_year -= 1900;
-    datetime.tm_mon -= 1;
-    time_internal = mktime(&datetime);
+    time_internal = tm_SubDefault(datetime);
 
     data = vector<float>();
     data.reserve(48 * 33);

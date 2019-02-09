@@ -10,13 +10,15 @@
 #include <vector>
 #include <sstream>
 
+#include "../Time/Time.h"
+
 using namespace std;
 
 /// to parse calibration data for 1 stand
 struct CalibrationDataInput{
     tm datetime = {};
     time_t time_internal;
-    double unk1;
+    double MJD;
     int unk2, temperature, unk3;
     vector<float> data;
 

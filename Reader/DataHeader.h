@@ -11,6 +11,8 @@
 #include <ctime>
 #include <sstream>
 
+#include "../Time/time.h"
+
 using namespace std;
 
 struct DataHeader{

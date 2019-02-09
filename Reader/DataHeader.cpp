@@ -14,22 +14,29 @@ ifstream &operator>>(ifstream & in, DataHeader& dt){
 
     in >> tmp >> dt.source >> tmp >> dt.alpha >> tmp >> dt.delta >> tmp >> dt.fcentral >> tmp >> dt.wb_total;
 
-    string datetime;
-    in >> tmp >> datetime >> tmp >> tmp;
-    sscanf(datetime.c_str(), "%d.%d.%d", &dt.begin_datetime.tm_mday, &dt.begin_datetime.tm_mon, &dt.begin_datetime.tm_year);
-    in >> tmp >> datetime >> tmp >> tmp;
-    sscanf(datetime.c_str(), "%d:%d:%d", &dt.begin_datetime.tm_hour, &dt.begin_datetime.tm_min, &dt.begin_datetime.tm_sec);
-    dt.begin_datetime.tm_year -= 1900;
-    dt.begin_datetime.tm_mon -= 1;
+
+    tm tm_local = {};
+    string datetime_local, datetime_UTC;
+    in >> tmp >> datetime_local >> tmp >> datetime_UTC;
+    sscanf(datetime_local.c_str(), "%d.%d.%d", &tm_local.tm_mday, &tm_local.tm_mon, &tm_local.tm_year);
+    sscanf(datetime_UTC.c_str(), "%d.%d.%d", &dt.begin_datetime.tm_mday, &dt.begin_datetime.tm_mon, &dt.begin_datetime.tm_year);
+
+    in >> tmp >> datetime_local >> tmp >> datetime_UTC;
+    sscanf(datetime_local.c_str(), "%d:%d:%d", &tm_local.tm_hour, &tm_local.tm_min, &tm_local.tm_sec);
+    sscanf(datetime_UTC.c_str(), "%d:%d:%d", &dt.begin_datetime.tm_hour, &dt.begin_datetime.tm_min, &dt.begin_datetime.tm_sec);
+    tm_SubDefault(dt.begin_datetime);
+    tm_SubDefault(tm_local);
     dt.begin_time = mktime(&dt.begin_datetime);
 
-    in >> tmp >> datetime;
-    sscanf(datetime.c_str(), "%d.%d.%d", &dt.end_datetime.tm_mday, &dt.end_datetime.tm_mon, &dt.end_datetime.tm_year);
-    in >> tmp >> datetime;
-    sscanf(datetime.c_str(), "%d:%d:%d", &dt.end_datetime.tm_hour, &dt.end_datetime.tm_min, &dt.end_datetime.tm_sec);
-    dt.end_datetime.tm_year -= 1900;
-    dt.end_datetime.tm_mon -= 1;
-    dt.end_time = mktime(&dt.end_datetime);
+    int diff_local_and_UTC_in_seconds = difftime(mktime(&tm_local), mktime(&dt.begin_datetime));
+
+
+    in >> tmp >> datetime_local;
+    sscanf(datetime_local.c_str(), "%d.%d.%d", &dt.end_datetime.tm_mday, &dt.end_datetime.tm_mon, &dt.end_datetime.tm_year);
+    in >> tmp >> datetime_local;
+    sscanf(datetime_local.c_str(), "%d:%d:%d", &dt.end_datetime.tm_hour, &dt.end_datetime.tm_min, &dt.end_datetime.tm_sec);
+    dt.end_datetime.tm_sec -= diff_local_and_UTC_in_seconds;
+    tm_SubDefault(dt.end_datetime);
 
     in >> tmp;
     getline(in, tmp, '\n');
