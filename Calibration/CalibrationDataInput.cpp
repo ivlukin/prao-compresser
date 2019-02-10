@@ -4,13 +4,11 @@
 #include "CalibrationDataInput.h"
 
 CalibrationDataInput::CalibrationDataInput(string &input) {
-    int start;
-    while(start = min(min(input.find('|'), input.find(',')), min(input.find('{'), input.find('}'))), start > 0)
-        input[start] = ' ';
+    input = regex_replace(input, regex({R"([|,\{\}\r])"}), " ");
 
     istringstream in(input);
     string date, time;
-    in >> date >> time >> MJD >> unk2 >> temperature >> unk3;
+    in >> date >> time >> MJD >> signal_type >> temperature >> is_data_good;
 
     sscanf(date.c_str(), "%d-%d-%d", &datetime.tm_year, &datetime.tm_mon, &datetime.tm_mday);
     sscanf(time.c_str(), "%d:%d:%d.", &datetime.tm_hour, &datetime.tm_min, &datetime.tm_sec);

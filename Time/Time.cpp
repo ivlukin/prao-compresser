@@ -11,3 +11,8 @@ int tm_SubDefault(tm &time){
     }
     return mktime(&time);
 }
+
+int tm_toUTC(tm &time, int seconds){
+    time.tm_sec -= seconds;
+    return tm_SubDefault(time);
+}

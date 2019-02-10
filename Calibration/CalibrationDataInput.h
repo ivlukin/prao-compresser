@@ -7,6 +7,7 @@
 
 #include <ctime>
 #include <string>
+#include <regex>
 #include <vector>
 #include <sstream>
 
@@ -19,10 +20,10 @@ struct CalibrationDataInput{
     tm datetime = {};
     time_t time_internal;
     double MJD;
-    int unk2, temperature, unk3;
+    int signal_type, temperature, is_data_good;
     vector<float> data;
 
     /// input - is a string read from file and that contains data related to 1 calibration array of signals with header
-    CalibrationDataInput(string &input);
+    explicit CalibrationDataInput(string &input);
 };
 #endif //PRAO_COMPRESSER_CALIBRATIONDATAINPUT_H
