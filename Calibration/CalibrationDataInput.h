@@ -18,7 +18,7 @@ using namespace std;
 /// to parse calibration data for 1 stand
 struct CalibrationDataInput{
     tm datetime = {};
-    time_t time_internal;
+    //time_t time_internal;
     double MJD;
     int signal_type, temperature, is_data_good;
     vector<float> data;

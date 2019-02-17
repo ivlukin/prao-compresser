@@ -4,6 +4,12 @@
 
 #include "FilesListItem.h"
 
+DataReader* FilesListItem::getDataReader(double starSeconds_timeChunk_dur){
+    if (reader == nullptr)
+        reader = new DataReader(filepath, starSeconds_timeChunk_dur);
+    return reader;
+}
+
 istream &operator>>(istream & in, FilesListItem& dt){
     string tmp;
     getline(in, tmp, ';');
@@ -21,7 +27,7 @@ istream &operator>>(istream & in, FilesListItem& dt){
     dt.npoints = atoi(tmp.c_str());
 
     getline(in, tmp, ';');
-    dt.tresolution = atof(tmp.c_str());
+    dt.tresolution = atof(tmp.c_str()) / 1000;
 
     getline(in, tmp, ';');
     dt.star_time_start = atof(tmp.c_str());

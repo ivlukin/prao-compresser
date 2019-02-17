@@ -24,9 +24,8 @@ ifstream &operator>>(ifstream & in, DataHeader& dt){
     in >> tmp >> datetime_local >> tmp >> datetime_UTC;
     sscanf(datetime_local.c_str(), "%d:%d:%d", &tm_local.tm_hour, &tm_local.tm_min, &tm_local.tm_sec);
     sscanf(datetime_UTC.c_str(), "%d:%d:%d", &dt.begin_datetime.tm_hour, &dt.begin_datetime.tm_min, &dt.begin_datetime.tm_sec);
-    tm_SubDefault(dt.begin_datetime);
+    dt.MJD_begin = to_MJD(dt.begin_datetime);
     tm_SubDefault(tm_local);
-    dt.begin_time = mktime(&dt.begin_datetime);
 
     int diff_local_and_UTC_in_seconds = difftime(mktime(&tm_local), mktime(&dt.begin_datetime));
 
@@ -36,7 +35,7 @@ ifstream &operator>>(ifstream & in, DataHeader& dt){
     in >> tmp >> datetime_local;
     sscanf(datetime_local.c_str(), "%d:%d:%d", &dt.end_datetime.tm_hour, &dt.end_datetime.tm_min, &dt.end_datetime.tm_sec);
     dt.end_datetime.tm_sec -= diff_local_and_UTC_in_seconds;
-    tm_SubDefault(dt.end_datetime);
+    dt.MJD_end = to_MJD(dt.end_datetime);
 
     in >> tmp;
     getline(in, tmp, '\n');
@@ -48,6 +47,7 @@ ifstream &operator>>(ifstream & in, DataHeader& dt){
     }
 
     in >> tmp >> dt.tresolution >> tmp >> dt.npoints >> tmp >> dt.nbands;
+    dt.tresolution /= 1000;
 
     in >> tmp;
     getline(in, tmp, '\n');

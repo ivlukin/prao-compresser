@@ -18,9 +18,9 @@ using namespace std;
 struct DataHeader{
     int numpar = 0, npoints = 0, nbands = 0;
     string source = "", alpha = "", delta = "";
-    float fcentral = 0, wb_total = 0, tresolution = 0;
+    double fcentral = 0, wb_total = 0, tresolution = 0;
     tm begin_datetime = {}, end_datetime = {};
-    int begin_time = 0, end_time = 0;
+    double MJD_begin = 0, MJD_end = 0;
     vector<int> modulus = vector<int>();
     vector<float> wbands = vector<float>(), fbands = vector<float>();
 

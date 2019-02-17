@@ -12,7 +12,7 @@ CalibrationDataInput::CalibrationDataInput(string &input) {
 
     sscanf(date.c_str(), "%d-%d-%d", &datetime.tm_year, &datetime.tm_mon, &datetime.tm_mday);
     sscanf(time.c_str(), "%d:%d:%d.", &datetime.tm_hour, &datetime.tm_min, &datetime.tm_sec);
-    time_internal = tm_SubDefault(datetime);
+    tm_toUTC(datetime);
 
     data = vector<float>();
     data.reserve(48 * 33);
@@ -21,9 +21,9 @@ CalibrationDataInput::CalibrationDataInput(string &input) {
     in >> curr;
     do{
         data.push_back(curr);
-        curr = 0;
+        curr = -1;
         in >> curr;
-    } while (curr != 0);
+    } while (curr != -1);
 
     if (data.size() != 7 * 48 && data.size() != 33 * 48)
         throw logic_error("CalibrationDataInput read floats err");

@@ -5,7 +5,8 @@
 #ifndef PRAO_COMPRESSER_TESTREADER_H
 #define PRAO_COMPRESSER_TESTREADER_H
 
-#include "DateReader.h"
+#include "DataReader.h"
+#include "FilesListItem.h"
 
 #include <iostream>
 

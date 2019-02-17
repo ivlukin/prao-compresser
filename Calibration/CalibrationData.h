@@ -6,6 +6,7 @@
 #define PRAO_COMPRESSER_CALIBRATIONDATA_H
 
 #include "CalibrationDataInput.h"
+
 #include <iostream>
 
 using namespace std;
@@ -15,8 +16,8 @@ class CalibrationData {
 
 private:
     CalibrationDataInput *small = nullptr, *big = nullptr;
-    float *one_kelvin = nullptr, *zero_level = nullptr;
-    time_t time_internal;
+    double *one_kelvin = nullptr, *zero_level = nullptr;
+    double MJD;
 
 /// precalculates one_kelvin and zero_level coefs used while calibration
     void calculateCoefs();
@@ -25,14 +26,15 @@ public:
     static const int Tgs = 2400, Teq = 278; /// temperature of big signal and of small signal
 
     /// used to create instances to make searches by value "time"
-    explicit CalibrationData(time_t time);
+    CalibrationData(double time_MJD);
     ~CalibrationData();
 
     /// small and big parsed calibration signals
     CalibrationData(string &data1, string &data2);
 
-    float const * get_one_kelvin();
-    float const * get_zero_level();
+    double const * get_one_kelvin();
+    double const * get_zero_level();
+    double get_MJD();
 
     void print_date();
 

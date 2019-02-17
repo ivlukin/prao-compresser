@@ -20,7 +20,7 @@ void CalibrationData::calculateCoefs() {
     big->data.clear();
 }
 
-CalibrationData::CalibrationData(time_t time) : time_internal(time) { }
+CalibrationData::CalibrationData(double time_MJD) : MJD(time_MJD) { }
 
 CalibrationData::CalibrationData(string &data1, string &data2) {
     small = new CalibrationDataInput(data1);
@@ -29,14 +29,14 @@ CalibrationData::CalibrationData(string &data1, string &data2) {
     if (small->temperature == Tgs && big->temperature == Teq)
         swap(small, big);
 
-    if (small->time_internal != big->time_internal)
-        throw logic_error("small->time_internal != big->time_internal");
+    if (small->MJD != big->MJD)
+        throw logic_error("small->MJD != big->MJD");
 
-    time_internal = small->time_internal;
+    MJD = small->MJD;
 
     unsigned int size = small->data.size();
-    one_kelvin = new float[size];
-    zero_level = new float[size];
+    one_kelvin = new double[size];
+    zero_level = new double[size];
 
     calculateCoefs();
 }
@@ -53,18 +53,26 @@ CalibrationData::~CalibrationData() {
     //small = big = nullptr;
 }
 
-float const * CalibrationData::get_one_kelvin(){
+double const * CalibrationData::get_one_kelvin(){
     return one_kelvin;
 }
 
-float const * CalibrationData::get_zero_level(){
+double const * CalibrationData::get_zero_level(){
     return zero_level;
 }
 
+double CalibrationData::get_MJD() {
+    return MJD;
+}
+
 void CalibrationData::print_date() {
-    cout << small->datetime.tm_year + 1900 << " " << small->datetime.tm_mon + 1 << " " << small->datetime.tm_mday << " " << small->datetime.tm_hour << endl;
+    tm_AddDefault(small->datetime);
+    cout.precision(8);
+    cout << "UTC: " << small->datetime.tm_year << "\t" << small->datetime.tm_mon << "\t" << small->datetime.tm_mday << "\t" << small->datetime.tm_hour << "\t" << small->datetime.tm_min << "\t";
+    cout << "MJD: " << fixed << small->MJD << endl;
+    tm_SubDefault(small->datetime);
 }
 
 bool CalibrationData::operator<(const CalibrationData &c) const {
-    return time_internal < c.time_internal;
+    return MJD < c.MJD;
 }
