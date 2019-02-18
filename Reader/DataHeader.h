@@ -11,7 +11,7 @@
 #include <ctime>
 #include <sstream>
 
-#include "../Time/time.h"
+#include "../Time/Time.h"
 
 using namespace std;
 
