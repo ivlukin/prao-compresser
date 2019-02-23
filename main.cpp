@@ -11,7 +11,8 @@ int main() {
 
    // testCalibrationStorage();
    // testReader();
-   SignalProcessor processor = SignalProcessor();
+//   SignalProcessor processor = SignalProcessor();
+//   processor.sort();
     return 0;
 }
 
