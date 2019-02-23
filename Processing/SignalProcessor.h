@@ -1,34 +1,35 @@
 //
-// Created by sorrow on 18.02.19.
+// Created by sorrow on 23.02.19.
 //
-/* this is opencl sandbox */
-#ifdef __APPLE__
-#include <OpenCL/opencl.h>
-#else
-
-#include <CL/cl.h>
-
-#endif
 
 #ifndef PRAO_COMPRESSER_SIGNALPROCESSOR_H
 #define PRAO_COMPRESSER_SIGNALPROCESSOR_H
 
+#include "GPUContext.h"
 
+/**
+ * Класс для процессинга сигналов с помощью GPU
+ */
 class SignalProcessor {
-public:
-    SignalProcessor();
-    cl_kernel compile_kernel(const char filename[]);
-
 private:
-    cl_platform_id platform_id;
-    cl_uint ret_num_platforms;
-    cl_device_id device_id;
-    cl_uint ret_num_devices;
-    cl_context context;
-    cl_command_queue command_queue;
-    cl_queue_properties properties;
+    /**
+     * Контекст устройства GPU
+     */
+    GPUContext context;
 
 
+public:
+    SignalProcessor() {
+        context = GPUContext();
+    }
+
+    /**
+     * Метод для сортировки массива флоатов
+     * @param array - массив
+     * @param arraySize размер массива
+     * @param workitems - количество параллельно выполняемых потоков
+     */
+    void sort(const float *array[], size_t arraySize, size_t workitems);
 };
 
 

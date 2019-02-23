@@ -1,51 +1,46 @@
 //
-// Created by sorrow on 18.02.19.
+// Created by sorrow on 23.02.19.
 //
 
 #include <iostream>
-#include <fstream>
 #include "SignalProcessor.h"
-#include <memory>
 
-SignalProcessor::SignalProcessor() {
-    int ret = -1;
-    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
-    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
-    context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
-    command_queue = clCreateCommandQueueWithProperties(context, device_id, &properties, &ret);
-}
-
-cl_kernel SignalProcessor::compile_kernel(const char *filename) {
-    cl_program program = NULL;
-    cl_kernel kernel = NULL;
+void SignalProcessor::sort(const float *array[], size_t arraySize, size_t workitems) {
 
     int ret = -1;
-    size_t source_size;
-    std::unique_ptr<char[]> source;
-    char *source_str;
 
-    try {
-        std::ifstream stream;
-        stream.exceptions(std::ios_base::badbit | std::ios_base::failbit | std::ios_base::eofbit);
-        stream.open(filename, std::ios_base::in);
-        stream.seekg(0, std::ios_base::end);
-        source_size = stream.tellg();
-        stream.seekg(0, std::ios_base::beg);
-        source.reset(new char[source_size]);
-        stream.read(source.get(), source_size);
-    } catch (const std::exception &e) {
-        std::cerr << "Can't read kernel: " << e.what() << std::endl;
-        exit(1);
-    }
+    /* компилируем рабочее ядро */
+    cl_kernel kernel = context.compile_kernel("Kernels/SortKernel.cl", "sort");
 
-/* создать бинарник из кода программы */
-    program = clCreateProgramWithSource(context, 1, (const char **) &source_str, (const size_t *) &source_size, &ret);
+    /* количество work - item */
+    size_t global_work_size[1] = {workitems};
 
-/* скомпилировать программу */
-    ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+    /* количество блоков */
+    int memLength = static_cast<int>(global_work_size[0]);
 
-/* создать кернел */
-    kernel = clCreateKernel(program, "test", &ret);
+    /* память на буфер */
+    auto *mem = (cl_float *) malloc(sizeof(cl_float) * memLength * arraySize);
 
-    return kernel;
+    /* создать буфер */
+    /* TODO: положить туда массив флоатов */
+    cl_mem memobj = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, memLength * sizeof(cl_float), nullptr,
+                                   &ret);
+
+    /* записать данные в буфер */
+    ret = clEnqueueWriteBuffer(context.getClCommandQueue(), memobj, CL_TRUE, 0, memLength * sizeof(cl_float), mem, 0,
+                               nullptr, nullptr);
+
+    /* устанавливаем параметр */
+    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *) &memobj);
+
+
+    /* выполнить кернел */
+    ret = clEnqueueNDRangeKernel(context.getClCommandQueue(), kernel, 1, nullptr, global_work_size, nullptr, 0, nullptr,
+                                 nullptr);
+
+    /* считать данные из буфера */
+    ret = clEnqueueReadBuffer(context.getClCommandQueue(), memobj, CL_TRUE, 0, memLength * sizeof(float), mem, 0,
+                              nullptr, nullptr);
+
+    /* данные хранятся в mem[i] */
 }
