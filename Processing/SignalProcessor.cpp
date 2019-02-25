@@ -22,7 +22,7 @@ void SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t work
 
 
     /* создать буфер */
-    cl_mem memobj = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, arraySize * sizeof(cl_float),
+    cl_mem memobj = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, sizeof(array),
                                    &array,
                                    &ret);
     if (ret != 0) {
@@ -40,10 +40,10 @@ void SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t work
     }
 
     /* устанавливаем параметр */
-    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), memobj);
+    ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), &memobj);
 
     if (ret != 0) {
-        std::cout << "fail setting the first arg!" << std::endl;
+        std::cout << "fail setting the first arg! ret: " << ret << std::endl;
         exit(-1);
     }
 

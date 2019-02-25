@@ -14,14 +14,32 @@ GPUContext::GPUContext() {
     /* получение platform_id и количества платформ */
     ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
 
+    if (ret != 0) {
+        std::cout << "fail getting platform id. ret: " << ret << std::endl;
+        exit(-1);
+    }
+
     /* получение id GPU девайса */
     ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+    if (ret != 0) {
+        std::cout << "fail getting device id. ret: " << ret << std::endl;
+        exit(-1);
+    }
+
 
     /* создание контекста */
     context = clCreateContext(nullptr, 1, &device_id, nullptr, nullptr, &ret);
+    if (ret != 0) {
+        std::cout << "fail creating context. ret: " << ret << std::endl;
+        exit(-1);
+    }
 
     /* создание command queue (пока не совсем понятно что это */
-    command_queue = clCreateCommandQueueWithProperties(context, device_id, &properties, &ret);
+    command_queue = clCreateCommandQueueWithProperties(context, device_id, nullptr, &ret);
+    if (ret != 0) {
+        std::cout << "fail creating command_queue. ret: " << ret << std::endl;
+        exit(-1);
+    }
 }
 
 cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelName[]) {
