@@ -11,6 +11,6 @@ add_executable(prao-compresser main.cpp
         Reader/DataReader.cpp Reader/FilesListItem.h Reader/FilesListItem.cpp
         Point/Point.h
         Time/Time.h Time/Time.cpp
-        Processing/GPUContext.cpp Processing/GPUContext.h Processing/Kernels/SortKernel.cl
+        Processing/GPUContext.cpp Processing/GPUContext.h
         Processing/SignalProcessor.cpp Processing/SignalProcessor.h)
 target_link_libraries(prao-compresser OpenCL::OpenCL)
