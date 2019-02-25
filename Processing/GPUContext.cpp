@@ -68,12 +68,40 @@ cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelNam
 
     /* создать бинарник из кода программы */
     program = clCreateProgramWithSource(context, 1, (const char **) &source_str, (const size_t *) &source_size, &ret);
+    if (ret != 0) {
+        std::cout << "error creating binary file. ret: " << ret << std::endl;
+        exit(-1);
+    }
 
     /* скомпилировать программу */
     ret = clBuildProgram(program, 1, &device_id, nullptr, nullptr, nullptr);
+    if (ret != 0) {
+        std::cout << "kernel compiling error. ret: " << ret << std::endl;
+    }
+
+    if (ret == -11) {
+        // Determine the size of the log
+        size_t log_size;
+        clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+
+        // Allocate memory for the log
+        char *log = (char *) malloc(log_size);
+
+        // Get the log
+        clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+
+        // Print the log
+        printf("%s\n", log);
+        exit(-1);
+    }
 
     /* создать кернел */
     kernel = clCreateKernel(program, kernelName, &ret);
+    if (ret != 0) {
+        std::cout << "error creating kernel. ret: " << ret << std::endl;
+        exit(-1);
+    }
+
 
     return kernel;
 }
