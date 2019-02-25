@@ -27,9 +27,9 @@ public:
      * Метод для сортировки массива флоатов
      * @param array - массив
      * @param arraySize размер массива
-     * @param workitems - количество параллельно выполняемых потоков
+     * @param workitems - the number of work-items you wish to execute (called the global size) (64)
      */
-    void sort(const float *array[], size_t arraySize, size_t workitems);
+    void sort(const cl_float array[], size_t arraySize, size_t workitems);
 };
 
 
