@@ -22,7 +22,7 @@ int main() {
         std::cout << arr[i] << std::endl;
     std::cout << "========" << std::endl;
     SignalProcessor processor = SignalProcessor();
-    processor.sort(arr, size, 64);
+    processor.sort(arr, size, 256);
     return 0;
 }
 
