@@ -1,7 +1,7 @@
 
 inline void compare(
-        __local float *A,
-        __local float *B,
+        __global float *A,
+        __global float *B,
         __local float *idA,
         __local float *idB,
         bool dir) {
@@ -17,7 +17,7 @@ inline void compare(
     }
 }
 
-__kernel void MergeSort(__local float *arr,
+__kernel void MergeSort(__global float *arr,
                         __local float *arrHelper,
                         const unsigned int pairCount,
                         __private int localId) {
