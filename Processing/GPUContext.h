@@ -26,10 +26,9 @@ public:
      * @param kernelName - само название ядра. хранится внутри файла *.cl
      * @return скомпилированный и готовый к работе кернел
      */
-    cl_kernel compile_kernel(const char filename[], const char kernelName[]);
 
 
-private:
+private: /* gpu properties */
     cl_platform_id platform_id;
     cl_uint ret_num_platforms;
     cl_device_id device_id;
@@ -38,6 +37,16 @@ private:
     cl_command_queue command_queue;
     cl_queue_properties properties;
 
+private: /* kernels */
+    cl_kernel mergeSortStartKernel;
+    cl_kernel mergeSortGlobalSmallKernel;
+    cl_kernel mergeSortGlobalBigKernel;
+
+private:
+    cl_kernel compile_kernel(const char filename[], const char kernelName[]);
+
+public:
+    void initSortKernels();
 public: /* getters */
 
     /* context */
@@ -49,6 +58,21 @@ public: /* getters */
     cl_command_queue &getClCommandQueue() { return command_queue; }
 
     const cl_command_queue &getClCommandQueue() const { return command_queue; }
+
+    /* mergeSortStartKernel */
+    cl_kernel &getMergeSortStartKernel() { return mergeSortStartKernel; }
+
+    const cl_kernel &getMergeSortStartKernel() const { return mergeSortStartKernel; }
+
+    /* mergeSortGlobalSmallKernel */
+    cl_kernel &getMergeSortGlobalSmallKernel() { return mergeSortGlobalSmallKernel; }
+
+    const cl_kernel &getMergeSortGlobalSmallKernel() const { return mergeSortGlobalSmallKernel; }
+
+    /* mergeSortGlobalBigKernel */
+    cl_kernel &getMergeSortGlobalBigKernel() { return mergeSortGlobalBigKernel; }
+
+    const cl_kernel &getMergeSortGlobalBigKernel() const { return mergeSortGlobalBigKernel; }
 
 };
 

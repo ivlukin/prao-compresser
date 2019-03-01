@@ -7,15 +7,35 @@
 
 #include <iostream>
 #include <cmath>
-#include "SignalProcessor.h"
+#include "Sorter.h"
 
-cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t localWorkSize) {
+uint *Sorter::sort(const uint array[], size_t arraySize, size_t localWorkSize) {
 
     cl_int clError = -1;
-    cl_float out[arraySize];
+    uint *toSort;
+    /**
+    * Размер массива
+    */
+    size_t m_N;
+    /**
+     * Размер массива, увеличенный до степени двойки
+     */
+    size_t m_N_padded;
 
     m_N = arraySize;
     m_N_padded = getPaddedSize(m_N);
+    std::cout << "m_N_padded: " << m_N_padded << std::endl;
+    if (m_N < m_N_padded) {
+        toSort = new unsigned int[m_N_padded];
+        for (int i = 0; i < m_N; ++i)
+            toSort[i] = array[i];
+        for (int i = m_N; i < m_N_padded; ++i)
+            toSort[i] = 0;
+    } else {
+        toSort = new unsigned int[m_N];
+        for (int i = 0; i < m_N; ++i)
+            toSort[i] = array[i];
+    }
     unsigned int locLimit = 1;
     size_t globalWorkSize[1];
     size_t locWorkSize[1];
@@ -31,20 +51,24 @@ cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t
                                          &clError);
     printError("error creating output buffer", clError);
 
+    clError = clEnqueueWriteBuffer(context.getClCommandQueue(), m_dPingArray, CL_FALSE, 0, m_N_padded * sizeof(cl_uint),
+                                   toSort, 0,
+                                   nullptr, nullptr);
+    printError("error writing arr to buffer", clError);
+
 
     if (m_N_padded >= localWorkSize * 2) {
         locLimit = 2 * localWorkSize;
-        cl_kernel m_MergesortStartKernel = context.compile_kernel(
-                "../Kernels/AnotherSortKernel.cl",
-                "Sort_MergesortStart");
+        std::cout << "using merge sort start" << std::endl;
+
         // start with a local variant first, ASSUMING we have more than localWorkSize[0] * 2 elements
-        clError = clSetKernelArg(m_MergesortStartKernel, 0, sizeof(cl_mem), (void *) &array);
+        clError = clSetKernelArg(context.getMergeSortStartKernel(), 0, sizeof(cl_mem), (void *) &m_dPingArray);
         printError("error setting first kernel arg", clError);
 
-        clError |= clSetKernelArg(m_MergesortStartKernel, 1, sizeof(cl_mem), (void *) &out);
+        clError |= clSetKernelArg(context.getMergeSortStartKernel(), 1, sizeof(cl_mem), (void *) &m_dPongArray);
         printError("error setting second kernel arg", clError);
 
-        clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), m_MergesortStartKernel, 1, nullptr,
+        clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), context.getMergeSortStartKernel(), 1, nullptr,
                                          globalWorkSize,
                                          locWorkSize,
                                          0, nullptr, nullptr);
@@ -62,12 +86,10 @@ cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t
 
 
     if (m_N_padded <= MERGESORT_SMALL_STRIDE) {
-
+        std::cout << "using merge sort global small" << std::endl;
         /* компилируем рабочее ядро */
-        cl_kernel m_MergesortGlobalSmallKernel = context.compile_kernel(
-                "../Kernels/AnotherSortKernel.cl",
-                "Sort_MergesortGlobalSmall");
-        clError = clSetKernelArg(m_MergesortGlobalSmallKernel, 3, sizeof(cl_uint), (void *) &m_N_padded);
+
+        clError = clSetKernelArg(context.getMergeSortGlobalSmallKernel(), 3, sizeof(cl_uint), (void *) &m_N_padded);
         printError("failed setting 4-th arg of kernel", clError);
 
         for (; stride <= m_N_padded; stride <<= 1) {
@@ -77,14 +99,17 @@ cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t
             locWorkSize[0] = std::min(localWorkSize, neededWorkers);
             globalWorkSize[0] = getGlobalWorkSize(neededWorkers, localWorkSize);
 
-            clError = clSetKernelArg(m_MergesortGlobalSmallKernel, 0, sizeof(cl_mem), (void *) &m_dPingArray);
+            clError = clSetKernelArg(context.getMergeSortGlobalSmallKernel(), 0, sizeof(cl_mem),
+                                     (void *) &m_dPingArray);
             printError("failed setting first arg of kernel", clError);
-            clError |= clSetKernelArg(m_MergesortGlobalSmallKernel, 1, sizeof(cl_mem), (void *) &m_dPongArray);
+            clError |= clSetKernelArg(context.getMergeSortGlobalSmallKernel(), 1, sizeof(cl_mem),
+                                      (void *) &m_dPongArray);
             printError("failed setting second arg of kernel", clError);
-            clError |= clSetKernelArg(m_MergesortGlobalSmallKernel, 2, sizeof(cl_uint), (void *) &stride);
+            clError |= clSetKernelArg(context.getMergeSortGlobalSmallKernel(), 2, sizeof(cl_uint), (void *) &stride);
             printError("failed setting third arg of kernel", clError);
 
-            clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), m_MergesortGlobalSmallKernel, 1, nullptr,
+            clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), context.getMergeSortGlobalSmallKernel(), 1,
+                                             nullptr,
                                              globalWorkSize,
                                              locWorkSize, 0, nullptr, nullptr);
             printError("error running kernel", clError);
@@ -93,10 +118,9 @@ cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t
         }
     } else {
         /* компилируем рабочее ядро */
-        cl_kernel m_MergesortGlobalBigKernel = context.compile_kernel(
-                "../Kernels/AnotherSortKernel.cl",
-                "Sort_MergesortGlobalBig");
-        clError = clSetKernelArg(m_MergesortGlobalBigKernel, 3, sizeof(cl_uint), (void *) &m_N_padded);
+
+        std::cout << "using merge sort global big" << std::endl;
+        clError = clSetKernelArg(context.getMergeSortGlobalBigKernel(), 3, sizeof(cl_uint), (void *) &m_N_padded);
         printError("failed setting 4-th arg of kernel", clError);
 
         for (; stride <= m_N_padded; stride <<= 1) {
@@ -106,14 +130,15 @@ cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t
             locWorkSize[0] = std::min(localWorkSize, neededWorkers);
             globalWorkSize[0] = getGlobalWorkSize(neededWorkers, localWorkSize);
 
-            clError = clSetKernelArg(m_MergesortGlobalBigKernel, 0, sizeof(cl_mem), (void *) &m_dPingArray);
+            clError = clSetKernelArg(context.getMergeSortGlobalBigKernel(), 0, sizeof(cl_mem), (void *) &m_dPingArray);
             printError("failed setting first arg of kernel", clError);
-            clError |= clSetKernelArg(m_MergesortGlobalBigKernel, 1, sizeof(cl_mem), (void *) &m_dPongArray);
+            clError |= clSetKernelArg(context.getMergeSortGlobalBigKernel(), 1, sizeof(cl_mem), (void *) &m_dPongArray);
             printError("failed setting second arg of kernel", clError);
-            clError |= clSetKernelArg(m_MergesortGlobalBigKernel, 2, sizeof(cl_uint), (void *) &stride);
+            clError |= clSetKernelArg(context.getMergeSortGlobalBigKernel(), 2, sizeof(cl_uint), (void *) &stride);
             printError("failed setting third arg of kernel", clError);
 
-            clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), m_MergesortGlobalBigKernel, 1, nullptr,
+            clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), context.getMergeSortGlobalBigKernel(), 1,
+                                             nullptr,
                                              globalWorkSize,
                                              locWorkSize, 0, nullptr, nullptr);
             printError("failed run kernel", clError);
@@ -122,17 +147,24 @@ cl_float *SignalProcessor::sort(const cl_float array[], size_t arraySize, size_t
                 std::swap(m_dPingArray, m_dPongArray);
         }
     }
-    clEnqueueReadBuffer(context.getClCommandQueue(), m_dPingArray, CL_TRUE, 0, m_N * sizeof(cl_float), out, 0, nullptr,
+    uint *tmp = new unsigned int[m_N_padded];
+    clEnqueueReadBuffer(context.getClCommandQueue(), m_dPingArray, CL_TRUE, 0, m_N_padded * sizeof(cl_uint), tmp, 0,
+                        nullptr,
                         nullptr);
-    return out;
+//    uint *out = new unsigned int[m_N];
+//    for (int i = 0; i < m_N_padded; ++i)
+//        out[i] = tmp[m_N_padded - m_N + i];
+    delete[] toSort;
+    return tmp;
+
 }
 
-size_t SignalProcessor::getPaddedSize(size_t n) {
+size_t Sorter::getPaddedSize(size_t n) {
     auto log2val = (unsigned int) std::ceil(std::log((float) n) / std::log(2.f));
     return (size_t) pow(2, log2val);
 }
 
-size_t SignalProcessor::getGlobalWorkSize(size_t DataElemCount, size_t LocalWorkSize) {
+size_t Sorter::getGlobalWorkSize(size_t DataElemCount, size_t LocalWorkSize) {
     size_t r = DataElemCount % LocalWorkSize;
     if (r == 0)
         return DataElemCount;
@@ -140,9 +172,10 @@ size_t SignalProcessor::getGlobalWorkSize(size_t DataElemCount, size_t LocalWork
         return DataElemCount + LocalWorkSize - r;
 }
 
-void SignalProcessor::printError(std::string message, int errorCode) {
+void Sorter::printError(std::string message, int errorCode) {
     if (errorCode != 0) {
         std::cout << message << " error code:" << errorCode << std::endl;
         exit(-1);
     }
 }
+

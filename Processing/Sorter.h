@@ -11,26 +11,26 @@
 /**
  * Класс для процессинга сигналов с помощью GPU
  */
-class SignalProcessor {
+class Sorter {
 private:
     /**
      * Контекст устройства GPU
      */
     GPUContext context;
 
+
+private:
+
     size_t getPaddedSize(size_t n);
 
     size_t getGlobalWorkSize(size_t DataElemCount, size_t LocalWorkSize);
-
-    size_t m_N{};
-    size_t m_N_padded{};
 
     void printError(std::string, int errorCode);
 
 
 public:
-    SignalProcessor() {
-        context = GPUContext();
+    explicit Sorter(GPUContext context) {
+        this->context = context;
     }
 
     /**
@@ -39,7 +39,8 @@ public:
      * @param arraySize размер массива
      * @param workitems - the number of work-items you wish to execute (called the global size) (256)
      */
-    cl_float* sort(const cl_float array[], size_t arraySize, size_t workitems);
+    uint *sort(const uint array[], size_t arraySize, size_t workitems);
+
 };
 
 

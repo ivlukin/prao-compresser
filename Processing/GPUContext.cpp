@@ -106,4 +106,16 @@ cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelNam
     return kernel;
 }
 
+void GPUContext::initSortKernels() {
+    mergeSortStartKernel = compile_kernel(
+            "../Processing/Kernels/AnotherSortKernel.cl",
+            "Sort_MergesortStart");
+    mergeSortGlobalSmallKernel = compile_kernel(
+            "../Processing/Kernels/AnotherSortKernel.cl",
+            "Sort_MergesortGlobalSmall");
+    mergeSortGlobalBigKernel = compile_kernel(
+            "../Processing/Kernels/AnotherSortKernel.cl",
+            "Sort_MergesortGlobalBig");
+}
+
 
