@@ -7,30 +7,22 @@
 #define MERGESORT_SMALL_STRIDE 1024 * 64
 
 #include "GPUContext.h"
+#include "Processor.h"
 
 /**
  * Класс для процессинга сигналов с помощью GPU
  */
-class Sorter {
-private:
-    /**
-     * Контекст устройства GPU
-     */
-    GPUContext context;
-
-
+class Sorter : Processor {
 private:
 
     size_t getPaddedSize(size_t n);
 
     size_t getGlobalWorkSize(size_t DataElemCount, size_t LocalWorkSize);
 
-    void printError(std::string, int errorCode);
-
-
 public:
-    explicit Sorter(GPUContext context) {
-        this->context = context;
+
+    explicit Sorter(GPUContext context) : Processor(context) {
+
     }
 
     /**

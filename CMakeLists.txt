@@ -12,5 +12,5 @@ add_executable(prao-compresser main.cpp
         Point/Point.h
         Time/Time.h Time/Time.cpp
         Processing/GPUContext.cpp Processing/GPUContext.h
-        Processing/Sorter.cpp Processing/Sorter.h)
+        Processing/Sorter.cpp Processing/Sorter.h Processing/MetricsCalculator.cpp Processing/MetricsCalculator.h Processing/Processor.cpp Processing/Processor.h)
 target_link_libraries(prao-compresser OpenCL::OpenCL)

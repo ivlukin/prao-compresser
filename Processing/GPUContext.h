@@ -31,22 +31,27 @@ public:
 private: /* gpu properties */
     cl_platform_id platform_id;
     cl_uint ret_num_platforms;
-    cl_device_id device_id;
     cl_uint ret_num_devices;
     cl_context context;
     cl_command_queue command_queue;
-    cl_queue_properties properties;
+    cl_context_properties *properties;
+    //cl_device_id device_id;
+    cl_device_id device;
 
 private: /* kernels */
     cl_kernel mergeSortStartKernel;
     cl_kernel mergeSortGlobalSmallKernel;
     cl_kernel mergeSortGlobalBigKernel;
+    cl_kernel metricsKernel;
 
 private:
     cl_kernel compile_kernel(const char filename[], const char kernelName[]);
 
 public:
     void initSortKernels();
+
+    void initMetricsKernels();
+
 public: /* getters */
 
     /* context */
@@ -73,6 +78,11 @@ public: /* getters */
     cl_kernel &getMergeSortGlobalBigKernel() { return mergeSortGlobalBigKernel; }
 
     const cl_kernel &getMergeSortGlobalBigKernel() const { return mergeSortGlobalBigKernel; }
+
+    /* metrics kernel */
+    cl_kernel &getMetricsKernel() { return metricsKernel; }
+
+    const cl_kernel &getMetricsKernel() const { return metricsKernel; }
 
 };
 

@@ -18,24 +18,25 @@ GPUContext::GPUContext() {
         std::cout << "fail getting platform id. ret: " << ret << std::endl;
         exit(-1);
     }
-
     /* получение id GPU девайса */
-    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_devices);
+    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device, &ret_num_devices);
     if (ret != 0) {
         std::cout << "fail getting device id. ret: " << ret << std::endl;
         exit(-1);
     }
 
 
+    std::cout<< "creating context..." << std::endl;
     /* создание контекста */
-    context = clCreateContext(nullptr, 1, &device_id, nullptr, nullptr, &ret);
+    context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &ret);
     if (ret != 0) {
         std::cout << "fail creating context. ret: " << ret << std::endl;
         exit(-1);
     }
 
+    std::cout<< "creating command queue..." << std::endl;
     /* создание command queue (пока не совсем понятно что это */
-    command_queue = clCreateCommandQueueWithProperties(context, device_id, nullptr, &ret);
+    command_queue = clCreateCommandQueueWithProperties(context, device, nullptr, &ret);
     if (ret != 0) {
         std::cout << "fail creating command_queue. ret: " << ret << std::endl;
         exit(-1);
@@ -66,6 +67,7 @@ cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelNam
         printf("%i", a);
     }
 
+    std::cout<< "creating program..." << std::endl;
     /* создать бинарник из кода программы */
     program = clCreateProgramWithSource(context, 1, (const char **) &source_str, (const size_t *) &source_size, &ret);
     if (ret != 0) {
@@ -73,8 +75,9 @@ cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelNam
         exit(-1);
     }
 
+    std::cout<< "building program..." << std::endl;
     /* скомпилировать программу */
-    ret = clBuildProgram(program, 1, &device_id, nullptr, nullptr, nullptr);
+    ret = clBuildProgram(program, 1, &device, nullptr, nullptr, nullptr);
     if (ret != 0) {
         std::cout << "kernel compiling error. ret: " << ret << std::endl;
     }
@@ -82,13 +85,13 @@ cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelNam
     if (ret == -11) {
         // Determine the size of the log
         size_t log_size;
-        clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 
         // Allocate memory for the log
         char *log = (char *) malloc(log_size);
 
         // Get the log
-        clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+        clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
 
         // Print the log
         printf("%s\n", log);
@@ -116,6 +119,10 @@ void GPUContext::initSortKernels() {
     mergeSortGlobalBigKernel = compile_kernel(
             "../Processing/Kernels/AnotherSortKernel.cl",
             "Sort_MergesortGlobalBig");
+}
+
+void GPUContext::initMetricsKernels() {
+    metricsKernel = compile_kernel("../Processing/Kernels/MetricsKernel.cl", "StandardDeviation");
 }
 
 

@@ -172,10 +172,3 @@ size_t Sorter::getGlobalWorkSize(size_t DataElemCount, size_t LocalWorkSize) {
         return DataElemCount + LocalWorkSize - r;
 }
 
-void Sorter::printError(std::string message, int errorCode) {
-    if (errorCode != 0) {
-        std::cout << message << " error code:" << errorCode << std::endl;
-        exit(-1);
-    }
-}
-
