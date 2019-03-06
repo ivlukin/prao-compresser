@@ -16,17 +16,14 @@ int main() {
     context.initMetricsKernels();
     size_t arraySize = 800;
     size_t arrayNum = 33 * 48;
-    float *arrays[arrayNum];
-    srand (static_cast <unsigned> (time(0)));
-    for (int i = 0; i < arrayNum; i++) {
-        arrays[i] = new float[arraySize];
-        for (int j = 0; j < arraySize; ++j) {
-            arrays[i][j] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-        }
+    float array[arrayNum * arraySize];
+    srand(static_cast <unsigned> (time(0)));
+    for (int i = 0; i < arrayNum * arraySize; i++) {
+        array[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     }
     clock_t tStart = clock();
     MetricsCalculator calculator = MetricsCalculator(context);
-    calculator.calc(arrays, arrayNum, arraySize);
+    calculator.calc(array, arrayNum, arraySize);
 
 }
 

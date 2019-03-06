@@ -12,7 +12,7 @@
 class MetricsCalculator : Processor {
 
 public:
-    void calc(float *array[], int arrayNum, int arraySize);
+    void calc(float array[], int arrayNum, int arraySize);
 
     explicit MetricsCalculator(GPUContext context) : Processor(context) {
 
