@@ -18,14 +18,14 @@
 
 class GPUContext {
 public:
-    GPUContext();
+    GPUContext() = default;
 
     /**
-     * Собирает и компилирует ядро
-     * @param filename - путь к ядру. можно и относительный.
-     * @param kernelName - само название ядра. хранится внутри файла *.cl
-     * @return скомпилированный и готовый к работе кернел
+     * Оператор присваивания. просто копирует все поля
+     * @param gpuContext
+     * @return
      */
+    GPUContext &operator=(const GPUContext &gpuContext);
 
 
 private: /* gpu properties */
@@ -35,7 +35,6 @@ private: /* gpu properties */
     cl_context context;
     cl_command_queue command_queue;
     cl_context_properties *properties;
-    //cl_device_id device_id;
     cl_device_id device;
 
 private: /* kernels */
@@ -45,12 +44,27 @@ private: /* kernels */
     cl_kernel metricsKernel;
 
 private:
+    /**
+ * Собирает и компилирует ядро
+ * @param filename - путь к ядру. можно и относительный.
+ * @param kernelName - само название ядра. хранится внутри файла *.cl
+ * @return скомпилированный и готовый к работе кернел
+ */
     cl_kernel compile_kernel(const char filename[], const char kernelName[]);
 
 public:
+    /**
+     * инициализирует ядра для сортировки
+     */
     void initSortKernels();
 
+    /**
+     * сортирует ядра подсчета метрик
+     */
     void initMetricsKernels();
+
+    /** инициализирует контекст и все остальное */
+    void initContext();
 
 public: /* getters */
 

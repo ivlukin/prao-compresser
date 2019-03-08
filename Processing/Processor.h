@@ -10,7 +10,7 @@
 
 class Processor {
 protected:
-    GPUContext context;
+    GPUContext context = GPUContext();
 
     explicit Processor(GPUContext context) {
         this->context = context;
