@@ -13,6 +13,7 @@ int main() {
 //    testCalibrationStorage();
 //   testReader();
     GPUContext context = GPUContext();
+    context.initContext();
     context.initMetricsKernels();
     size_t arraySize = 800;
     size_t arrayNum = 33 * 48;
@@ -24,6 +25,7 @@ int main() {
     clock_t tStart = clock();
     MetricsCalculator calculator = MetricsCalculator(context);
     calculator.calc(array, arrayNum, arraySize);
+    std::cout << "elapsed time: " << (float)(clock() - tStart) / CLOCKS_PER_SEC << "s" <<std::endl;
 
 }
 

@@ -6,29 +6,31 @@
 #include "MetricsCalculator.h"
 
 void MetricsCalculator::calc(float array[], int arrayNum, int arraySize) {
-    std::cout << "starting calculating..." << std::endl;
+    std::cout << "starting calculating metrics..." << std::endl;
 
     cl_int clError;
     size_t globalWorkSize[1];
     size_t localWorkSize[1];
 
-    localWorkSize[0] = 1;
+    localWorkSize[0] = 2;
     globalWorkSize[0] = arrayNum;
-    cl_float out[arrayNum];
+
+    int inputBufferSize = sizeof(cl_float) * arrayNum * arraySize;
+    int outBufferSize = sizeof(cl_float) * arrayNum;
 
     /* input buffer. array of arrays */
     cl_mem inputBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE,
-                                        sizeof(cl_float) * arrayNum * arraySize,
-                                        nullptr, &clError);
+                                        inputBufferSize, nullptr, &clError);
     printError("error creating input buffer", clError);
 
     /* out buffer. array of dispersions */
-    cl_mem outBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, sizeof(cl_float) * arrayNum,
-                                      nullptr, &clError);
+    cl_mem outDispBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, outBufferSize, nullptr, &clError);
+    /* out buffer. array of means */
+    cl_mem outMeanBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, outBufferSize, nullptr, &clError);
     printError("error creating output buffer", clError);
 
     clError = clEnqueueWriteBuffer(context.getClCommandQueue(), inputBuffer, CL_FALSE, 0,
-                                   sizeof(cl_float) * arrayNum * arraySize,
+                                   inputBufferSize,
                                    array, 0, nullptr, nullptr);
 
     printError("error writing input array to buffer", clError);
@@ -36,23 +38,28 @@ void MetricsCalculator::calc(float array[], int arrayNum, int arraySize) {
     clError = clSetKernelArg(context.getMetricsKernel(), 0, sizeof(inputBuffer), (void *) &inputBuffer);
     printError("error setting input array (of arrays)", clError);
 
-    clError = clSetKernelArg(context.getMetricsKernel(), 1, sizeof(outBuffer), (void *) &outBuffer);
-    printError("error setting output array", clError);
+    clError = clSetKernelArg(context.getMetricsKernel(), 1, sizeof(outDispBuffer), (void *) &outDispBuffer);
+    printError("error setting dispersion output array", clError);
 
-    clError = clSetKernelArg(context.getMetricsKernel(), 2, sizeof(cl_int), (void *) &arraySize);
-    printError("error setting third arg", clError);
+    clError = clSetKernelArg(context.getMetricsKernel(), 2, sizeof(outMeanBuffer), (void *) &outMeanBuffer);
+    printError("error setting mean output array", clError);
+
+    clError = clSetKernelArg(context.getMetricsKernel(), 3, sizeof(cl_int), (void *) &arraySize);
+    printError("error setting array size", clError);
 
     clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), context.getMetricsKernel(), 1, nullptr,
                                      globalWorkSize, localWorkSize, 0, nullptr, nullptr);
     printError("error running kernel", clError);
 
-    clError = clEnqueueReadBuffer(context.getClCommandQueue(), outBuffer, CL_TRUE, 0, sizeof(cl_float) * arrayNum, out,
-                                  0,
-                                  nullptr,
-                                  nullptr);
-    printError("error reading buffer", clError);
-    for (int i = 0; i < 5; ++i) {
-        std::cout << out[i] << std::endl;
-    }
+    float outDispersion[arrayNum];
+    clError = clEnqueueReadBuffer(context.getClCommandQueue(), outDispBuffer, CL_TRUE, 0, outBufferSize, outDispersion,
+                                  0, nullptr, nullptr);
+    printError("error reading disp buffer", clError);
+
+    float outMean[arrayNum];
+    clError = clEnqueueReadBuffer(context.getClCommandQueue(), outMeanBuffer, CL_TRUE, 0, outBufferSize, outMean,
+                                  0, nullptr, nullptr);
+    printError("error reading mean buffer", clError);
+
 }
 

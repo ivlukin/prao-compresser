@@ -12,9 +12,15 @@
 class MetricsCalculator : Processor {
 
 public:
+    /**
+     * Считает метрики для массива массивов, записанных в один сплошной массив
+     * @param array - массив массивов, записанный в один спложной массив
+     * @param arrayNum - количество массивов
+     * @param arraySize - размер одного массива
+     */
     void calc(float array[], int arrayNum, int arraySize);
 
-    explicit MetricsCalculator(GPUContext context) : Processor(context) {
+   explicit MetricsCalculator(GPUContext context) : Processor(context) {
 
     }
 };
