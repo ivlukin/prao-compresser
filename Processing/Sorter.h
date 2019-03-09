@@ -9,6 +9,8 @@
 #include "GPUContext.h"
 #include "Processor.h"
 
+typedef unsigned int uint;
+
 /**
  * Класс для процессинга сигналов с помощью GPU
  */
