@@ -77,7 +77,7 @@ void metrics::check_natively_over_CPU(float * input, metrics * calculated, int c
 
         if (count == 0)
             cout << "count == 0 err" << endl;
-        if (count < 540 || count > 550)
+        if (abs((right_percentile - left_percentile + 0.00001) * array_size - count) > 5)
             cout << "count < 540 || count > 550 err" << endl;
 
         av1 /= array_size;

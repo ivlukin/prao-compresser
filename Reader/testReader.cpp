@@ -181,7 +181,7 @@ void testReader(){
                 process_next();
                 ++i;
                 if (i % 4 == 0)
-                    cout << (i * 5068800) / 1024 << endl;
+                    cout << (i * buffer_size) / 1024 << endl;
             }
         }
         catch (logic_error e){
