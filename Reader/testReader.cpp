@@ -51,13 +51,15 @@ cl_kernel kernel;
 cl_mem cl_in_buff, cl_in2_buff, cl_out_buff, cl_cache_buff;
 
 
-const int features_count = 9;
+const float left_percentile = 0.02f;
+const float right_percentile = 1.0f - 0.3f;
+
 const size_t size_chunk_floats = 800;
 const size_t global_workgroup = 33 * 48;
-const size_t buffer_size = sizeof(cl_float) * global_workgroup * size_chunk_floats;
-const size_t buffer_size_out = sizeof(cl_float) * global_workgroup * features_count;
 const size_t local_workgroup = 12;
-char buff[0x1001];
+
+const size_t buffer_size = sizeof(cl_float) * global_workgroup * size_chunk_floats;
+const size_t buffer_size_out = sizeof(metrics) * global_workgroup;
 
 
 void start(){
@@ -65,6 +67,7 @@ void start(){
     cl_uint ret_num_platforms, ret_num_devices = 0;
     cl_platform_id platform_id[10];
     cl_device_id devices;
+    char buff[0x1001];
 
     cl_context context;
     cl_program program;
@@ -74,8 +77,6 @@ void start(){
 
 
     ret = clGetPlatformIDs(10, platform_id, &ret_num_platforms);
-    if (ret_num_platforms != 2)
-        throw logic_error("ret_num_platforms");
     ret = clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_CPU, 1, &devices, &ret_num_devices);
     ret = clGetDeviceInfo(devices, CL_DEVICE_NAME, 0x100, buff, (size_t *)&ret);
     cout << buff << endl;
@@ -109,6 +110,9 @@ void start(){
     //cl_out_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, 0, &ret);
     ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), &cl_in_buff);
     ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), &cl_in2_buff);
+    ret = clSetKernelArg(kernel, 2, sizeof(cl_int), &size_chunk_floats);
+    ret = clSetKernelArg(kernel, 3, sizeof(cl_float), &left_percentile);
+    ret = clSetKernelArg(kernel, 4, sizeof(cl_float), &right_percentile);
     //ret = clSetKernelArg(kernel, 1, size_chunk_floats * 2 * sizeof(cl_float), NULL);
     //ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), &cl_out_buff);
 }
@@ -131,8 +135,8 @@ void process_next(){
 
     ret = clEnqueueReadBuffer(queue, cl_in2_buff, CL_TRUE, 0, buffer_size_out, metrics_buffer, 0, NULL, NULL); // checking sorting was performed without errors
 
-    metrics::check_natively_over_CPU(data_reordered_buffer[0], size_chunk_floats, global_workgroup, metrics_buffer);
 
+    metrics::check_natively_over_CPU(data_reordered_buffer[0], metrics_buffer, global_workgroup, size_chunk_floats, left_percentile, right_percentile);
 
     fTimeSum += clock() - fTimeStart;
 }

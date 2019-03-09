@@ -42,7 +42,7 @@ float findOrderStatistic(float * array, int n, int k) {
     }
 }
 
-void metrics::check_natively_over_CPU(float * input, int array_size, int count_arrays, metrics * calculated, float comparing_accuracy) {
+void metrics::check_natively_over_CPU(float * input, metrics * calculated, int count_arrays, int array_size, float left_percentile, float right_percentile, float comparing_accuracy) {
     for(int i = 0; i < count_arrays; ++i, ++calculated){
         float * input_curr = input + i * array_size;
 
@@ -60,20 +60,31 @@ void metrics::check_natively_over_CPU(float * input, int array_size, int count_a
 
         double D = 0, av1 = 0, D2 = 0, av2 = 0;
 
+
+        float right_bound = findOrderStatistic(input_curr, array_size, array_size - array_size * right_percentile + 0.00001f);
+        float left_bound = findOrderStatistic(input_curr, array_size, array_size - array_size * left_percentile + 0.00001f);
+
+        //sort(input_curr, input_curr + 800, greater<float>());
+
         int count = 0;
         for (int j = 0; j < array_size; ++j){
             av1 += input_curr[j];
-            if (input_curr[j] > calculated->left_bound && input_curr[j] < calculated->right_bound) {
+            if (input_curr[j] > left_bound && input_curr[j] <= right_bound) {
                 ++count;
                 av2 += input_curr[j];
             }
         }
 
+        if (count == 0)
+            cout << "count == 0 err" << endl;
+        if (count < 540 || count > 550)
+            cout << "count < 540 || count > 550 err" << endl;
+
         av1 /= array_size;
         av2 /= count;
         for (int j = 0; j < array_size; ++j){
             D += (input_curr[j] - av1) * (input_curr[j] - av1);
-            if (input_curr[j] > calculated->left_bound && input_curr[j] < calculated->right_bound)
+            if (input_curr[j] > left_bound && input_curr[j] <= right_bound)
                 D2 += (input_curr[j] - av2) * (input_curr[j] - av2);
         }
         D /= array_size;
@@ -93,5 +104,9 @@ void metrics::check_natively_over_CPU(float * input, int array_size, int count_a
             cout << "D " << i << endl;
         if (fabs(D2 - calculated->variance_bounded) > comparing_accuracy)
             cout << "D2 " << i << endl;
+        if (left_bound != calculated->left_bound || left_bound == 0)
+            cout << "left_bound " << i << endl;
+        if (right_bound != calculated->right_bound || right_bound == 0)
+            cout << "right_bound " << i << endl;
     }
 }

@@ -57,10 +57,9 @@ struct metrics {
 };
 
 
-__kernel void getMetrics(__global float* inp, __global struct metrics * output){
-    const int array_size = 800;
-	const int right = array_size * 0.02;
-	const int left = array_size * 0.7;
+__kernel void getMetrics(__global float* inp, __global struct metrics * output, const int array_size, const float left_percentile, const float right_percentile){
+	const int right = array_size * left_percentile + 0.00001f;
+	const int left = array_size * right_percentile + 0.00001f;
 	
 	__global float * curr_in = &inp[get_global_id(0) * array_size];
 	__global struct metrics * curr_out = &output[get_global_id(0)];
@@ -84,8 +83,8 @@ __kernel void getMetrics(__global float* inp, __global struct metrics * output){
 	}
 	
 	
-	float left_bound = nth_element_internal(curr_in, array_size, left); 
-	float right_bound = nth_element_internal(curr_in, array_size, right);
+	float right_bound = nth_element_internal(curr_in, array_size, array_size - left); 
+	float left_bound = nth_element_internal(curr_in, array_size, array_size - right);
 	float med_value = nth_element_internal(curr_in, array_size, array_size / 2);
 	
 	
@@ -98,7 +97,7 @@ __kernel void getMetrics(__global float* inp, __global struct metrics * output){
 	for (int i = 0; i < array_size; ++i){
 		float curr_val = curr_in[i];
 		
-		if (curr_val > left_bound && curr_val < right_bound){
+		if (curr_val > left_bound && curr_val <= right_bound){
 			av_bounded += curr_val;
 			av_sqt_bounded += curr_val * curr_val;
 			++count;

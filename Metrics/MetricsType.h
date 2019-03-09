@@ -25,11 +25,13 @@ struct metrics {
 
     /// \brief calculates the need metrics over CPU and compares with proveded (accuracy is 0.1)
     /// \param input array of arrays of data
-    /// \param array_size size of each array
-    /// \param count_arrays count of arrays
     /// \param calculated array of calculated metrics of arrays of date
-    /// \param accuracy when comparing two float metrics calculated by different ways
-    static void check_natively_over_CPU(float * input, int array_size, int count_arrays, metrics * calculated, float comparing_accuracy = 0.1f);
+    /// \param count_arrays count of arrays
+    /// \param array_size size of each array
+    /// \param left_percentile ratio that describes how much will be taken of the lowest
+    /// \param right_percentile ratio that describes how much will be taken of the biggest
+    /// \param comparing_accuracy when comparing two float metrics calculated by different ways
+    static void check_natively_over_CPU(float * input, metrics * calculated, int count_arrays, int array_size, float left_percentile, float right_percentile, float comparing_accuracy = 0.1f);
 };
 
 
