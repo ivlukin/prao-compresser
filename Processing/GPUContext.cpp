@@ -135,7 +135,7 @@ void GPUContext::initContext() {
     }
 
     /* создание command queue (пока не совсем понятно что это */
-    command_queue = clCreateCommandQueueWithProperties(context, device, nullptr, &ret);
+    command_queue = clCreateCommandQueue(context, device, 0, &ret);
     if (ret != 0) {
         std::cout << "fail creating command_queue. ret: " << ret << std::endl;
         exit(-1);
