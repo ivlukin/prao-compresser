@@ -26,8 +26,8 @@ CalibrationDataStorage * readCalibrationDataStorage(string path_calibration){
 char* readKernel(char *&source_str, size_t &source_size){
     size_t MAX_SOURCE_SIZE = 1000000;
     FILE *fp;
-    //const char fileName[] = "../resources/heapSort.cl";
-    const char fileName[] = "../resources/nth_element_CPU_edition.cl";
+    //const char fileName[] = "../resources/nth_element_CPU_edition.cl";
+    const char fileName[] = "../resources/heapSort_CPU_edition.cl";
     int i;
 
     try {
@@ -102,7 +102,6 @@ void start(){
         exit(-1);
     }
 
-    //kernel = clCreateKernel(program, "nth_element", &ret);
     kernel = clCreateKernel(program, "getMetrics", &ret);
 
     cl_in_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, 0, &ret);
@@ -135,10 +134,10 @@ void process_next(){
 
     ret = clEnqueueReadBuffer(queue, cl_in2_buff, CL_TRUE, 0, buffer_size_out, metrics_buffer, 0, NULL, NULL); // checking sorting was performed without errors
 
+    fTimeSum += clock() - fTimeStart;
 
     metrics::check_natively_over_CPU(data_reordered_buffer[0], metrics_buffer, global_workgroup, size_chunk_floats, left_percentile, right_percentile);
 
-    fTimeSum += clock() - fTimeStart;
 }
 
 
