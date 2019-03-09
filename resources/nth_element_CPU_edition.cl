@@ -44,17 +44,26 @@ float nth_element_internal(__global float * curr, int right, int k) {
 }
 
 
+struct metrics {
+    float min; 					// minimum of all
+    float max; 					// maximum of all
+    float max_ind; 				// index of maximum of all
+    float average; 				// average of all
+    float median; 				// median of all
+    float variance; 			// variance of all
+    float variance_bounded; 	// variance of bounded
+    float left_bound; 			// the left bound value based on which the bounded var is calculated
+    float right_bound; 			// the right bound value based on which the bounded var is calculated
+};
 
 
-
-__kernel void getMetrics(__global float* inp, __global float* output){
+__kernel void getMetrics(__global float* inp, __global struct metrics * output){
     const int array_size = 800;
-    const int features_count = 9;
 	const int right = array_size * 0.02;
 	const int left = array_size * 0.7;
 	
-	__global float* curr_in = &inp[get_global_id(0) * array_size];
-	__global float* curr_out = &output[get_global_id(0) * features_count];
+	__global float * curr_in = &inp[get_global_id(0) * array_size];
+	__global struct metrics * curr_out = &output[get_global_id(0)];
 	
 	
 	float min = 1000000;
@@ -107,14 +116,14 @@ __kernel void getMetrics(__global float* inp, __global float* output){
 	double D = (av_sqt - av * av);
 	double D_bounded = (av_sqt_bounded - av_bounded * av_bounded);
 	
-	curr_out[0] = (float)min; // minimum of all
-	curr_out[1] = (float)max; // maximum of all
-	curr_out[2] = (float)max_i; // index of maximum of all
-	curr_out[3] = (float)av;// / array_size; // average of all
-	curr_out[4] = med_value; // median of all
-	curr_out[5] = (float)D; // variance of all
-	curr_out[6] = (float)D_bounded; // variance of bounded
-	curr_out[7] = (float)left_bound; // variance of all
-	curr_out[8] = (float)right_bound; // variance of bounded
+	curr_out->min = (float)min; 
+	curr_out->max = (float)max;
+	curr_out->max_ind = (float)max_i;
+	curr_out->average = (float)av;
+	curr_out->median = med_value;
+	curr_out->variance = (float)D;
+	curr_out->variance_bounded = (float)D_bounded;
+	curr_out->left_bound = (float)left_bound;
+	curr_out->right_bound = (float)right_bound;
 	//curr_out[] = ; // 
 }

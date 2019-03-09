@@ -4,8 +4,10 @@
 
 #include "testReader.h"
 #include "../Calibration/CalibrationDataStorage.h"
+#include "../Metrics/MetricsType.h"
 
 #include <CL/cl.h>
+
 
 
 CalibrationDataStorage * readCalibrationDataStorage(string path_calibration){
@@ -57,11 +59,6 @@ const size_t buffer_size_out = sizeof(cl_float) * global_workgroup * features_co
 const size_t local_workgroup = 12;
 char buff[0x1001];
 
-float arr_[global_workgroup * size_chunk_floats];
-//float arr[size_chunk_floats * 4][global_workgroup / 4];
-//float arr2[size_chunk_floats * 4][global_workgroup / 4];
-float arr3[global_workgroup][size_chunk_floats];
-float arr4[global_workgroup][features_count];
 
 void start(){
     cl_int ret;
@@ -87,8 +84,22 @@ void start(){
 
     readKernel(kernel_source, kernel_len);
     program = clCreateProgramWithSource(context, 1, (const char **)&kernel_source, &kernel_len, &ret);
-    if (clBuildProgram(program, 1, &devices, NULL, NULL, NULL))
-        throw logic_error("clBuildProgram");
+    ret = clBuildProgram(program, 1, &devices, NULL, NULL, NULL);
+    if (ret == -11) {
+        // Determine the size of the log
+        size_t log_size;
+        clGetProgramBuildInfo(program, devices, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+
+        // Allocate memory for the log
+        char *log = (char *) malloc(log_size);
+
+        // Get the log
+        clGetProgramBuildInfo(program, devices, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+
+        // Print the log
+        cout << log << endl;
+        exit(-1);
+    }
 
     //kernel = clCreateKernel(program, "nth_element", &ret);
     kernel = clCreateKernel(program, "getMetrics", &ret);
@@ -103,152 +114,26 @@ void start(){
 }
 
 float fTimeStart, fTimeSum = 0;
-//int tmp[buffer_size / 4];
 
 
-int partition3_2(float *arr_, int L, int R){
-    swap(arr_[(L + R) / 2], arr_[L]);
-    float piv = arr_[L];
-    while (true) {
-        while (arr_[R] < piv) // && L < R
-            --R;
-        if (L < R)
-            arr_[L++] = arr_[R];
-        while (arr_[L] > piv && L < R)
-            L++;
-        if (L < R)
-            arr_[R--] = arr_[L];
-        else
-            break;
-
-    }
-    arr_[L] = piv;
-    return L;
-}
-
-
-float findOrderStatistic(float * array, int n, int k) {
-    int left = 0, right = n - 1;
-    while (true) {
-        int mid = partition3_2(array, left, right);
-
-        if (mid == k)
-            return array[mid];
-        else if (k < mid)
-            right = mid - 1;
-        else
-            left = mid + 1;
-
-    }
-}
-
-#include <vector>
-#include <numeric>
-#include <string>
-#include <functional>
-#include <algorithm>
-#include <cmath>
-
+float arr_[global_workgroup * size_chunk_floats];
+float data_reordered_buffer[global_workgroup][size_chunk_floats];
+metrics metrics_buffer[global_workgroup];
 
 void process_next(){
     cl_int ret;
 
     float fTimeStart = clock();
 
-    ret = clEnqueueWriteBuffer(queue, cl_in_buff, CL_TRUE, 0, buffer_size, arr3, 0, NULL, NULL);
+    ret = clEnqueueWriteBuffer(queue, cl_in_buff, CL_TRUE, 0, buffer_size, data_reordered_buffer, 0, NULL, NULL);
 
     ret = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_workgroup, &local_workgroup, 0, NULL, NULL);
 
-    //clEnqueueReadBuffer(queue, cl_in_buff, CL_TRUE, 0, buffer_size, arr2, 0, NULL, NULL); // checking sorting was performed without errors
-    clEnqueueReadBuffer(queue, cl_in2_buff, CL_TRUE, 0, buffer_size_out, arr4, 0, NULL, NULL); // checking sorting was performed without errors
+    ret = clEnqueueReadBuffer(queue, cl_in2_buff, CL_TRUE, 0, buffer_size_out, metrics_buffer, 0, NULL, NULL); // checking sorting was performed without errors
+
+    metrics::check_natively_over_CPU(data_reordered_buffer[0], size_chunk_floats, global_workgroup, metrics_buffer);
 
 
-    for(int i = 0; i < global_workgroup; ++i){
-        float mn = *min_element(&arr3[i][0], &arr3[i][800]);
-        float mx = *max_element(&arr3[i][0], &arr3[i][800]);
-        int mx_i = (max_element(&arr3[i][0], &arr3[i][800]) - &arr3[i][0]);
-        //double av = accumulate<float *, double>(&arr3[i][0], &arr3[i][800], 0) / 800.0;
-        float med;
-        med = findOrderStatistic(&arr3[i][0], 800, 400);
-        nth_element(&arr3[i][0], &arr3[i][0] + 400, &arr3[i][800], greater<float>());
-        med = arr3[i][400];
-
-        double D = 0, av1 = 0, D2 = 0, av2 = 0;
-
-        int count = 0;
-        for (int j = 0; j < 800; ++j){
-            av1 += arr3[i][j];
-            if (arr3[i][j] > arr4[i][7] && arr3[i][j] < arr4[i][8]) {
-                ++count;
-                av2 += arr3[i][j];
-            }
-        }
-
-        av1 /= 800;
-        av2 /= count;
-        for (int j = 0; j < 800; ++j){
-            D += (arr3[i][j] - av1) * (arr3[i][j] - av1);
-            if (arr3[i][j] > arr4[i][7] && arr3[i][j] < arr4[i][8])
-                D2 += (arr3[i][j] - av2) * (arr3[i][j] - av2);
-        }
-        D /= 800;
-        D2 /= count;
-
-        if (mn != arr4[i][0] || mn == 0)
-            cout << "mn " << i << endl;
-        if (mx != arr4[i][1] || mx == 0)
-            cout << "mx " << i << endl;
-        if (mx_i != arr4[i][2])
-            cout << "mx_i " << i << endl;
-        if (fabs(av1 - arr4[i][3]) > 0.01)
-            cout << "average " << i << endl;
-        if (med != arr4[i][4] || med == 0)
-            cout << "med " << i << endl;
-        if (fabs(D - arr4[i][5]) > 0.1)
-            cout << "D " << i << endl;
-        if (fabs(D2 - arr4[i][6]) > 0.1)
-            cout << "D2 " << i << endl;
-    }
-/*
-    for (int i = 0; i < global_workgroup; ++i){
-        float * a1 = (float *)arr3 + 800 * i;
-        //float * a2 = (float *)arr2 + 800 * i;
-        float * a2 = (float *)arr4 + features_count * i;
-
-
-        float t15_1 = findOrderStatistic(a1, 800, 15);
-        //nth_element(a1, a1 + 15, a1 + 800, std::greater<>());
-        //float t15_1 = a1[15];
-        //nth_element(a1, a1 + 559, a1 + 800, std::greater<>());
-        float t559_1 = findOrderStatistic(a1, 800, 559);
-        //float t559_1 = a1[559];
-        float t287_1 = findOrderStatistic(a1, 800, 287);
-        //nth_element(a1, a1 + 287, a1 + 800, std::greater<>());
-        //float t287_1 = a1[287];
-
-        float t15_2 = a2[0];
-        float t559_2 = a2[1];
-        float t287_2 = a2[2];
-        if (t15_1 != t15_2 || t559_1 != t559_2 || t287_1 != t287_2 || t15_1 == 0 || t559_1 == 0 || t287_1 == 0)
-            //if (t15_1 != t15_2 || t559_1 != t559_2)
-            cout << i << endl;
-
-//        for (int j = 0; j < 800; ++j) {
-//            if (a1[i * 800 + j] != a2[i * 800 + j]) {
-//                cout << i << " " << j << endl;
-//                break;
-//            }
-//        }
-//
-//        for (int j = 0; j < 799; ++j){
-//            if (((float*)(arr2))[i * 800 + j] < ((float*)(arr2))[i * 800 + j + 1]) {
-//                cout << i << " " << j << endl;
-//                break;
-//            }
-//        }
-
-    }
-    */
     fTimeSum += clock() - fTimeStart;
 }
 
@@ -273,7 +158,7 @@ void testReader(){
         int i = 0;
         try {
             while(!reader->eof()) {
-                //reader->readNextPoints(arr3[0], size_chunk_floats);
+                //reader->readNextPoints(data_buffer[0], size_chunk_floats);
                 reader->readNextPoints(arr_, size_chunk_floats);
                 int count = 0;
                 for (int j = 0; j < size_chunk_floats * global_workgroup; ++j)
@@ -285,8 +170,8 @@ void testReader(){
 
                 for (int j1 = 0; j1 < global_workgroup; ++j1){
                     for (int j2 = 0; j2 < size_chunk_floats; ++j2){
-                        //arr3[j1][j2] = ((float *)(arr))[j1 + 33 * 48 * j2];
-                        arr3[j1][j2] = arr_[j1 + global_workgroup * j2];
+                        //data_buffer[j1][j2] = ((float *)(arr))[j1 + 33 * 48 * j2];
+                        data_reordered_buffer[j1][j2] = arr_[j1 + global_workgroup * j2];
                     }
                 }
                 //testSort();
