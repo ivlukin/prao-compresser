@@ -16,16 +16,17 @@
 #define MAX_SOURCE_SIZE (0x100000)
 
 
-class GPUContext {
+class OpenCLContext {
 public:
-    GPUContext() = default;
+    OpenCLContext() = default;
 
     /**
      * Оператор присваивания. просто копирует все поля
      * @param gpuContext
      * @return
      */
-    GPUContext &operator=(const GPUContext &gpuContext);
+    OpenCLContext &operator=(const OpenCLContext &gpuContext);
+
 
 
 private: /* gpu properties */

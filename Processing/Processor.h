@@ -6,13 +6,13 @@
 #define PRAO_COMPRESSER_PROCESSOR_H
 
 
-#include "GPUContext.h"
+#include "OpenCLContext.h"
 
 class Processor {
 protected:
-    GPUContext context = GPUContext();
+    OpenCLContext context = OpenCLContext();
 
-    explicit Processor(GPUContext context) {
+    explicit Processor(OpenCLContext context) {
         this->context = context;
     }
 

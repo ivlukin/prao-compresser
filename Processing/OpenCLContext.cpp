@@ -6,11 +6,11 @@
 
 #include <iostream>
 #include <fstream>
-#include "GPUContext.h"
+#include "OpenCLContext.h"
 #include <memory>
 
 
-cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelName[]) {
+cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernelName[]) {
     cl_program program = nullptr;
     cl_kernel kernel = nullptr;
 
@@ -75,7 +75,7 @@ cl_kernel GPUContext::compile_kernel(const char filename[], const char kernelNam
     return kernel;
 }
 
-void GPUContext::initSortKernels() {
+void OpenCLContext::initSortKernels() {
     mergeSortStartKernel = compile_kernel(
             "../Processing/Kernels/AnotherSortKernel.cl",
             "Sort_MergesortStart");
@@ -87,11 +87,11 @@ void GPUContext::initSortKernels() {
             "Sort_MergesortGlobalBig");
 }
 
-void GPUContext::initMetricsKernels() {
+void OpenCLContext::initMetricsKernels() {
     metricsKernel = compile_kernel("../Processing/Kernels/MetricsKernel.cl", "StandardDeviation");
 }
 
-GPUContext &GPUContext::operator=(const GPUContext &gpuContext) {
+OpenCLContext &OpenCLContext::operator=(const OpenCLContext &gpuContext) {
     if (this == &gpuContext)
         return *this;
 
@@ -110,7 +110,7 @@ GPUContext &GPUContext::operator=(const GPUContext &gpuContext) {
     return *this;
 }
 
-void GPUContext::initContext() {
+void OpenCLContext::initContext() {
     std::cout << "initializating context..." << std::endl;
     int ret = -1;
     /* получение platform_id и количества платформ */

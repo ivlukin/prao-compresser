@@ -6,7 +6,7 @@
 #define PRAO_COMPRESSER_SIGNALPROCESSOR_H
 #define MERGESORT_SMALL_STRIDE 1024 * 64
 
-#include "GPUContext.h"
+#include "OpenCLContext.h"
 #include "Processor.h"
 
 typedef unsigned int uint;
@@ -23,7 +23,7 @@ private:
 
 public:
 
-    explicit Sorter(GPUContext context) : Processor(context) {
+    explicit Sorter(OpenCLContext context) : Processor(context) {
 
     }
 

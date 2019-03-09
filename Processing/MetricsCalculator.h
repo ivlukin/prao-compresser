@@ -6,7 +6,7 @@
 #define PRAO_COMPRESSER_METRICSCALCULATOR_H
 
 
-#include "GPUContext.h"
+#include "OpenCLContext.h"
 #include "Processor.h"
 
 class MetricsCalculator : Processor {
@@ -20,7 +20,7 @@ public:
      */
     void calc(float array[], int arrayNum, int arraySize);
 
-   explicit MetricsCalculator(GPUContext context) : Processor(context) {
+   explicit MetricsCalculator(OpenCLContext context) : Processor(context) {
 
     }
 };
