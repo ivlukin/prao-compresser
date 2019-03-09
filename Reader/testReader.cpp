@@ -25,7 +25,7 @@ char* readKernel(char *&source_str, size_t &source_size){
     size_t MAX_SOURCE_SIZE = 1000000;
     FILE *fp;
     //const char fileName[] = "../resources/heapSort.cl";
-    const char fileName[] = "../resources/nth_element.cl";
+    const char fileName[] = "../resources/nth_element_CPU_edition.cl";
     int i;
 
     try {
