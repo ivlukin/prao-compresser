@@ -20,13 +20,14 @@ class OpenCLContext {
 public:
     OpenCLContext() = default;
 
+    OpenCLContext(int deviceType, int algorithmType);
+
     /**
      * Оператор присваивания. просто копирует все поля
-     * @param gpuContext
+     * @param oclContext
      * @return
      */
-    OpenCLContext &operator=(const OpenCLContext &gpuContext);
-
+    OpenCLContext &operator=(const OpenCLContext &oclContext);
 
 
 private: /* gpu properties */
@@ -35,14 +36,22 @@ private: /* gpu properties */
     cl_uint ret_num_devices;
     cl_context context;
     cl_command_queue command_queue;
-    cl_context_properties *properties;
     cl_device_id device;
 
 private: /* kernels */
-    cl_kernel mergeSortStartKernel;
-    cl_kernel mergeSortGlobalSmallKernel;
-    cl_kernel mergeSortGlobalBigKernel;
-    cl_kernel metricsKernel;
+
+    cl_kernel workingKernel;
+    /**
+     * CPU или GPU
+     * GPU = 0, CPU = 1
+     */
+    int deviceType;
+
+    /**
+     * Используемый алгоритм.
+     * nth_element = 0, heapSort = 1
+     */
+    int algorithm;
 
 private:
     /**
@@ -54,11 +63,6 @@ private:
     cl_kernel compile_kernel(const char filename[], const char kernelName[]);
 
 public:
-    /**
-     * инициализирует ядра для сортировки
-     */
-    void initSortKernels();
-
     /**
      * сортирует ядра подсчета метрик
      */
@@ -79,25 +83,11 @@ public: /* getters */
 
     const cl_command_queue &getClCommandQueue() const { return command_queue; }
 
-    /* mergeSortStartKernel */
-    cl_kernel &getMergeSortStartKernel() { return mergeSortStartKernel; }
-
-    const cl_kernel &getMergeSortStartKernel() const { return mergeSortStartKernel; }
-
-    /* mergeSortGlobalSmallKernel */
-    cl_kernel &getMergeSortGlobalSmallKernel() { return mergeSortGlobalSmallKernel; }
-
-    const cl_kernel &getMergeSortGlobalSmallKernel() const { return mergeSortGlobalSmallKernel; }
-
-    /* mergeSortGlobalBigKernel */
-    cl_kernel &getMergeSortGlobalBigKernel() { return mergeSortGlobalBigKernel; }
-
-    const cl_kernel &getMergeSortGlobalBigKernel() const { return mergeSortGlobalBigKernel; }
 
     /* metrics kernel */
-    cl_kernel &getMetricsKernel() { return metricsKernel; }
+    cl_kernel &getWorkingKernel() { return workingKernel; }
 
-    const cl_kernel &getMetricsKernel() const { return metricsKernel; }
+    const cl_kernel &getWorkingKernel() const { return workingKernel; }
 
 };
 

@@ -71,41 +71,30 @@ cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernel
         exit(-1);
     }
 
-
     return kernel;
 }
 
-void OpenCLContext::initSortKernels() {
-    mergeSortStartKernel = compile_kernel(
-            "../Processing/Kernels/AnotherSortKernel.cl",
-            "Sort_MergesortStart");
-    mergeSortGlobalSmallKernel = compile_kernel(
-            "../Processing/Kernels/AnotherSortKernel.cl",
-            "Sort_MergesortGlobalSmall");
-    mergeSortGlobalBigKernel = compile_kernel(
-            "../Processing/Kernels/AnotherSortKernel.cl",
-            "Sort_MergesortGlobalBig");
-}
 
 void OpenCLContext::initMetricsKernels() {
-    metricsKernel = compile_kernel("../Processing/Kernels/MetricsKernel.cl", "StandardDeviation");
+    if (algorithm == 0)
+        workingKernel = compile_kernel("../Processing/Kernels/nth_element.cl", "getMetrics");
+    else
+        workingKernel = compile_kernel("../Processing/Kernels/heapSort.cl", "getMetrics");
 }
 
-OpenCLContext &OpenCLContext::operator=(const OpenCLContext &gpuContext) {
-    if (this == &gpuContext)
+OpenCLContext &OpenCLContext::operator=(const OpenCLContext &oclContext) {
+    if (this == &oclContext)
         return *this;
 
-    platform_id = gpuContext.platform_id;
-    ret_num_platforms = gpuContext.ret_num_platforms;
-    ret_num_devices = gpuContext.ret_num_devices;
-    context = gpuContext.context;
-    command_queue = gpuContext.command_queue;
-    properties = gpuContext.properties;
-    device = gpuContext.device;
-    metricsKernel = gpuContext.metricsKernel;
-    mergeSortGlobalBigKernel = gpuContext.mergeSortGlobalBigKernel;
-    mergeSortGlobalSmallKernel = gpuContext.mergeSortGlobalSmallKernel;
-    mergeSortStartKernel = gpuContext.mergeSortStartKernel;
+    platform_id = oclContext.platform_id;
+    ret_num_platforms = oclContext.ret_num_platforms;
+    ret_num_devices = oclContext.ret_num_devices;
+    context = oclContext.context;
+    command_queue = oclContext.command_queue;
+    device = oclContext.device;
+    workingKernel = oclContext.workingKernel;
+    deviceType = oclContext.deviceType;
+    algorithm = oclContext.algorithm;
 
     return *this;
 }
@@ -120,11 +109,20 @@ void OpenCLContext::initContext() {
         std::cout << "fail getting platform id. ret: " << ret << std::endl;
         exit(-1);
     }
-    /* получение id GPU девайса */
-    ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device, &ret_num_devices);
-    if (ret != 0) {
-        std::cout << "fail getting device id. ret: " << ret << std::endl;
-        exit(-1);
+    if (deviceType == 0) {
+        /* получение id GPU девайса */
+        ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device, &ret_num_devices);
+        if (ret != 0) {
+            std::cout << "fail getting gpu device id. ret: " << ret << std::endl;
+            exit(-1);
+        }
+    } else {
+        /* получение id CPU девайса */
+        ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, &device, &ret_num_devices);
+        if (ret != 0) {
+            std::cout << "fail getting cpu device id. ret: " << ret << std::endl;
+            exit(-1);
+        }
     }
 
     /* создание контекста */
@@ -140,6 +138,11 @@ void OpenCLContext::initContext() {
         std::cout << "fail creating command_queue. ret: " << ret << std::endl;
         exit(-1);
     }
+}
+
+OpenCLContext::OpenCLContext(int deviceType, int algorithmType) {
+    this->deviceType = deviceType;
+    this->algorithm = algorithmType;
 }
 
 

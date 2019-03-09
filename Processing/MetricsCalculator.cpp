@@ -5,29 +5,16 @@
 #include <iostream>
 #include "MetricsCalculator.h"
 
-void MetricsCalculator::calc(float array[], int arrayNum, int arraySize) {
+void MetricsCalculator::calc() {
     std::cout << "starting calculating metrics..." << std::endl;
 
-    cl_int clError;
-    size_t globalWorkSize[1];
-    size_t localWorkSize[1];
+    size_t _localWorkSize[1];
+    size_t _globalWorkSize[1];
 
-    localWorkSize[0] = 2;
-    globalWorkSize[0] = arrayNum;
+    _localWorkSize[0] = localWorkSize;
+    _globalWorkSize[0] = globalWorkSize;
 
-    int inputBufferSize = sizeof(cl_float) * arrayNum * arraySize;
-    int outBufferSize = sizeof(cl_float) * arrayNum;
-
-    /* input buffer. array of arrays */
-    cl_mem inputBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE,
-                                        inputBufferSize, nullptr, &clError);
-    printError("error creating input buffer", clError);
-
-    /* out buffer. array of dispersions */
-    cl_mem outDispBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, outBufferSize, nullptr, &clError);
-    /* out buffer. array of means */
-    cl_mem outMeanBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, outBufferSize, nullptr, &clError);
-    printError("error creating output buffer", clError);
+    int clError;
 
     clError = clEnqueueWriteBuffer(context.getClCommandQueue(), inputBuffer, CL_FALSE, 0,
                                    inputBufferSize,
@@ -35,31 +22,44 @@ void MetricsCalculator::calc(float array[], int arrayNum, int arraySize) {
 
     printError("error writing input array to buffer", clError);
 
-    clError = clSetKernelArg(context.getMetricsKernel(), 0, sizeof(inputBuffer), (void *) &inputBuffer);
+    clError = clSetKernelArg(context.getWorkingKernel(), 0, sizeof(inputBuffer), (void *) &inputBuffer);
     printError("error setting input array (of arrays)", clError);
 
-    clError = clSetKernelArg(context.getMetricsKernel(), 1, sizeof(outDispBuffer), (void *) &outDispBuffer);
+    clError = clSetKernelArg(context.getWorkingKernel(), 1, sizeof(outBuffer), (void *) &outBuffer);
     printError("error setting dispersion output array", clError);
 
-    clError = clSetKernelArg(context.getMetricsKernel(), 2, sizeof(outMeanBuffer), (void *) &outMeanBuffer);
-    printError("error setting mean output array", clError);
-
-    clError = clSetKernelArg(context.getMetricsKernel(), 3, sizeof(cl_int), (void *) &arraySize);
+    clError = clSetKernelArg(context.getWorkingKernel(), 2, sizeof(cl_int), (void *) &arraySize);
     printError("error setting array size", clError);
 
-    clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), context.getMetricsKernel(), 1, nullptr,
-                                     globalWorkSize, localWorkSize, 0, nullptr, nullptr);
+    clError = clSetKernelArg(context.getWorkingKernel(), 3, sizeof(cl_float), (void *) &leftPercentile);
+    printError("error setting left percentile", clError);
+
+    clError = clSetKernelArg(context.getWorkingKernel(), 4, sizeof(cl_float), (void *) &rightPercentile);
+    printError("error setting right percentile", clError);
+
+    clError = clEnqueueNDRangeKernel(context.getClCommandQueue(), context.getWorkingKernel(), 1, nullptr,
+                                     _globalWorkSize, _localWorkSize, 0, nullptr, nullptr);
     printError("error running kernel", clError);
 
-    float outDispersion[arrayNum];
-    clError = clEnqueueReadBuffer(context.getClCommandQueue(), outDispBuffer, CL_TRUE, 0, outBufferSize, outDispersion,
+    clError = clEnqueueReadBuffer(context.getClCommandQueue(), outBuffer, CL_TRUE, 0, outBufferSize, outMetrics,
                                   0, nullptr, nullptr);
-    printError("error reading disp buffer", clError);
+    printError("error reading output buffer", clError);
 
-    float outMean[arrayNum];
-    clError = clEnqueueReadBuffer(context.getClCommandQueue(), outMeanBuffer, CL_TRUE, 0, outBufferSize, outMean,
-                                  0, nullptr, nullptr);
-    printError("error reading mean buffer", clError);
+}
 
+void MetricsCalculator::initBuffers() {
+
+    int clError;
+    inputBufferSize = sizeof(cl_float) * arrayNum * arraySize;
+    outBufferSize = sizeof(metrics) * arrayNum;
+
+    /* input buffer. array of arrays */
+    inputBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE,
+                                 inputBufferSize, nullptr, &clError);
+    printError("error creating input buffer", clError);
+
+    /* out buffer. array of metrics */
+    outBuffer = clCreateBuffer(context.getContext(), CL_MEM_READ_WRITE, outBufferSize, nullptr, &clError);
+    printError("error creating output buffer", clError);
 }
 
