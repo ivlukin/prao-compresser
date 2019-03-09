@@ -41,6 +41,7 @@ void MetricsCalculator::calc() {
                                      _globalWorkSize, _localWorkSize, 0, nullptr, nullptr);
     printError("error running kernel", clError);
 
+    metrics outMetrics[arrayNum];
     clError = clEnqueueReadBuffer(context.getClCommandQueue(), outBuffer, CL_TRUE, 0, outBufferSize, outMetrics,
                                   0, nullptr, nullptr);
     printError("error reading output buffer", clError);
