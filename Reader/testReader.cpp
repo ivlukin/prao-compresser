@@ -26,8 +26,8 @@ CalibrationDataStorage * readCalibrationDataStorage(string path_calibration){
 char* readKernel(char *&source_str, size_t &source_size){
     size_t MAX_SOURCE_SIZE = 1000000;
     FILE *fp;
-    //const char fileName[] = "../resources/nth_element_CPU_edition.cl";
-    const char fileName[] = "../resources/heapSort_CPU_edition.cl";
+    const char fileName[] = "../resources/nth_element_CPU_edition.cl";
+    //const char fileName[] = "../resources/heapSort_CPU_edition.cl";
     int i;
 
     try {
@@ -157,31 +157,18 @@ void testReader(){
 
         float start = 0, diff = 0;
         start = clock();
-
         int i = 0;
         try {
             while(!reader->eof()) {
-                //reader->readNextPoints(data_buffer[0], size_chunk_floats);
-                reader->readNextPoints(arr_, size_chunk_floats);
-                int count = 0;
-                for (int j = 0; j < size_chunk_floats * global_workgroup; ++j)
-                    count += ((float*)(arr_))[j] == 0;
-                if (count != 0){
-                    cout << "found null: " << count << endl;
-                    count = 0;
-                }
+                reader->readNextPoints(data_reordered_buffer[0], size_chunk_floats);
+                for (int j1 = 0; j1 < global_workgroup * size_chunk_floats; ++j1)
+                    if (((float *)(data_reordered_buffer))[j1] == 0)
+                        cout << "found null: " << j1 / size_chunk_floats << " " << j1 % size_chunk_floats << endl;
 
-                for (int j1 = 0; j1 < global_workgroup; ++j1){
-                    for (int j2 = 0; j2 < size_chunk_floats; ++j2){
-                        //data_buffer[j1][j2] = ((float *)(arr))[j1 + 33 * 48 * j2];
-                        data_reordered_buffer[j1][j2] = arr_[j1 + global_workgroup * j2];
-                    }
-                }
-                //testSort();
                 process_next();
-                ++i;
-                if (i % 4 == 0)
-                    cout << (i * buffer_size) / 1024 << endl;
+
+                if (i++ % 4 == 0)
+                    cout << ((i - 1) * buffer_size) / 1024 << endl;
             }
         }
         catch (logic_error e){

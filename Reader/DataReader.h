@@ -35,6 +35,7 @@ class DataReader{
     void updateCalibrationData();
     void calibrateArrayPoints(float *point, int count);
     void calibrateArrayPointsDetailed(float *point, int size);
+    void readNextPointsInternal(float *point, int full_count, int offset, int local_count);
 public:
 
     explicit DataReader(string filepath, double starSeconds_timeChunk_dur);
