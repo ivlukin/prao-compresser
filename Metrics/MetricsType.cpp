@@ -44,6 +44,8 @@ float findOrderStatistic(float * array, int n, int k) {
 
 void metrics::check_natively_over_CPU(float * input, metrics * calculated, int count_arrays, int array_size, float left_percentile, float right_percentile, float comparing_accuracy) {
     for(int i = 0; i < count_arrays; ++i, ++calculated){
+        //right_percentile += 0.000001f;
+        //left_percentile += 0.000001f;
         float * input_curr = input + i * array_size;
 
 
@@ -60,11 +62,11 @@ void metrics::check_natively_over_CPU(float * input, metrics * calculated, int c
 
         double D = 0, av1 = 0, D2 = 0, av2 = 0;
 
+        int left = round(array_size * right_percentile), right = round(array_size * left_percentile);
+        float right_bound = findOrderStatistic(input_curr, array_size, array_size - left);
+        float left_bound = findOrderStatistic(input_curr, array_size, array_size - right);
 
-        float right_bound = findOrderStatistic(input_curr, array_size, array_size - array_size * right_percentile + 0.00001f);
-        float left_bound = findOrderStatistic(input_curr, array_size, array_size - array_size * left_percentile + 0.00001f);
-
-        //sort(input_curr, input_curr + 800, greater<float>());
+        //sort(input_curr, input_curr + array_size, greater<float>());
 
         int count = 0;
         for (int j = 0; j < array_size; ++j){

@@ -58,8 +58,8 @@ struct metrics {
 
 
 __kernel void getMetrics(__global float* inp, __global struct metrics * output, const int array_size, const float left_percentile, const float right_percentile){
-	const int right = array_size * left_percentile + 0.00001f;
-	const int left = array_size * right_percentile + 0.00001f;
+	const int right = round(array_size * left_percentile);
+	const int left = round(array_size * right_percentile);
 	
 	__global float * curr_in = &inp[get_global_id(0) * array_size];
 	__global struct metrics * curr_out = &output[get_global_id(0)];

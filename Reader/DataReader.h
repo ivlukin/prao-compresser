@@ -11,7 +11,6 @@
 
 #include <cstring>
 
-
 class DataReader{
     bool is_header_parsed = false;
     int count_read_points = 0, points_before_switch_calibration = 0;
@@ -31,7 +30,6 @@ class DataReader{
 
 
     void readHeader();
-    //void calibratePoint(float * point);
     void realloc(double *& base, double const * from);
     void updateCalibrationData();
     void calibrateArrayPoints(float *point, int count);
@@ -43,6 +41,9 @@ public:
     ~DataReader();
     void setCalibrationData(CalibrationDataStorage *calibrationData);
 
+    inline int getNeedBufferSize(){
+        return floats_per_point * int(points_per_chunk + 1);
+    }
     /// used only for testing
     inline int getPointSize() {
         return floats_per_point;
