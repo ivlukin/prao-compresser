@@ -6,7 +6,6 @@
 #include "MetricsCalculator.h"
 
 metrics *MetricsCalculator::calc() {
-    std::cout << "starting calculating metrics..." << std::endl;
 
     size_t _localWorkSize[1];
     size_t _globalWorkSize[1];
@@ -45,6 +44,9 @@ metrics *MetricsCalculator::calc() {
     clError = clEnqueueReadBuffer(context.getClCommandQueue(), outBuffer, CL_TRUE, 0, outBufferSize, outMetrics,
                                   0, nullptr, nullptr);
     printError("error reading output buffer", clError);
+
+    clReleaseMemObject(inputBuffer);
+    clReleaseMemObject(outBuffer);
     return outMetrics;
 
 }

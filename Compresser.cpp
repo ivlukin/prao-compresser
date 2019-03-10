@@ -26,7 +26,7 @@ void Compresser::run() {
         DataReader *reader = item.getDataReader(10);
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
-        int i = 0;
+        int i = 1;
         try {
             while (!reader->eof()) {
                 int count = reader->readNextPoints(data_reordered_buffer);
