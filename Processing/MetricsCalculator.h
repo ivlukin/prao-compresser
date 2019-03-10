@@ -19,24 +19,22 @@ public:
      * @param arrayNum - количество массивов
      * @param arraySize - размер одного массива
      */
-    metrics* calc();
+    metrics *calc();
 
-    MetricsCalculator(OpenCLContext context, float *array, int arrayNum, int arraySize) : MetricsCalculator(context,
-                                                                                                            array,
-                                                                                                            arrayNum,
-                                                                                                            arraySize,
-                                                                                                            0.25f, 0.75f) {
+    MetricsCalculator(OpenCLContext context, float *array, int arrayNum, int arraySize, size_t localWorkSize)
+            : MetricsCalculator(context, array, arrayNum, arraySize, localWorkSize, 0.25f, 0.75f) {
     }
 
-    MetricsCalculator(OpenCLContext context, float *array, int arrayNum, int arraySize, float leftPercentile,
+    MetricsCalculator(OpenCLContext context, float *array, int arrayNum, int arraySize, size_t localWorkSize,
+                      float leftPercentile,
                       float rightPercentile) : Processor(context) {
         this->array = array;
         this->arrayNum = arrayNum;
         this->arraySize = arraySize;
         this->leftPercentile = leftPercentile;
         this->rightPercentile = rightPercentile;
-        globalWorkSize = static_cast<size_t>(arrayNum);
-        localWorkSize = 2;
+        this->globalWorkSize = static_cast<size_t>(arrayNum);
+        this->localWorkSize = localWorkSize;
         initBuffers();
     }
 

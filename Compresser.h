@@ -16,12 +16,13 @@ private:
     char *fileListPath;
     char *calibrationListPath;
     OpenCLContext context;
+    size_t localWorkSize;
 
 
 public:
     Compresser() = default;
 
-    Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context);
+    Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context, size_t localWorkSize);
 
     void run(double starSeconds, float leftPercentile, float rightPercentile);
 

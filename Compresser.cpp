@@ -9,10 +9,11 @@
 #include "Metrics/MetricsType.h"
 #include "Processing/MetricsCalculator.h"
 
-Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context) {
+Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context, size_t localWorkSize) {
     this->context = context;
     this->fileListPath = fileListPath;
     this->calibrationListPath = calibrationListPath;
+    this->localWorkSize = localWorkSize;
 }
 
 
@@ -27,13 +28,16 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
         int count;
+        int pointSize;
         int i = 1;
         try {
             clock_t tStart = clock();
             while (!reader->eof()) {
                 count = reader->readNextPoints(data_reordered_buffer);
+                pointSize = reader->getPointSize();
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
+                                                       localWorkSize,
                                                        leftPercentile,
                                                        rightPercentile);
                 auto *metrics_buffer = calculator.calc();
@@ -48,6 +52,8 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;
+            std::cout << "count: " << count << std::endl;
+            std::cout << "point size: " << pointSize << std::endl;
         }
 
     }

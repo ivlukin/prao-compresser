@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
         context.initMetricsKernels();
         clock_t tStart = clock();
         Compresser compresser = Compresser("../resources/filesListBig.txt", "../resources/bigCalibrationParts.txt",
-                                           context);
+                                           context, 16);
         compresser.run(10, 0.02f, 0.7f);
         std::cout << "elapsed time: " << (float) (clock() - tStart) / CLOCKS_PER_SEC << "s" << std::endl;
         return 0;
