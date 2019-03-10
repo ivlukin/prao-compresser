@@ -27,14 +27,16 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         DataReader *reader = item.getDataReader(starSeconds);
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
-        int count;
-        int pointSize;
         int i = 1;
+        clock_t tStart;
         try {
-            clock_t tStart = clock();
+            tStart = clock();
             while (!reader->eof()) {
-                count = reader->readNextPoints(data_reordered_buffer);
-                pointSize = reader->getPointSize();
+
+                /* wtf? */
+                if (i > 360)
+                    break;
+                int count = reader->readNextPoints(data_reordered_buffer);
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
                                                        localWorkSize,
@@ -52,9 +54,8 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;
-            std::cout << "count: " << count << std::endl;
-            std::cout << "point size: " << pointSize << std::endl;
         }
+
 
     }
 }
