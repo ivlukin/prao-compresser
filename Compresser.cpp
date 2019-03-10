@@ -32,10 +32,6 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         try {
             tStart = clock();
             while (!reader->eof()) {
-
-                /* wtf? */
-                if (i > 360)
-                    break;
                 int count = reader->readNextPoints(data_reordered_buffer);
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
