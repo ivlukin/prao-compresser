@@ -103,7 +103,8 @@ void OpenCLContext::initContext() {
     std::cout << "initializating context..." << std::endl;
     int ret = -1;
     /* получение platform_id и количества платформ */
-    ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+    cl_platform_id platforms[10];
+    ret = clGetPlatformIDs(10, platforms, &ret_num_platforms);
 
     if (ret != 0) {
         std::cout << "fail getting platform id. ret: " << ret << std::endl;
@@ -111,6 +112,7 @@ void OpenCLContext::initContext() {
     }
     if (deviceType == 0) {
         /* получение id GPU девайса */
+        platform_id = platforms[0];
         ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device, &ret_num_devices);
         if (ret != 0) {
             std::cout << "fail getting gpu device id. ret: " << ret << std::endl;
@@ -118,6 +120,7 @@ void OpenCLContext::initContext() {
         }
     } else {
         /* получение id CPU девайса */
+        platform_id = platforms[1];
         ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, &device, &ret_num_devices);
         if (ret != 0) {
             std::cout << "fail getting cpu device id. ret: " << ret << std::endl;
