@@ -10,6 +10,7 @@
 #include "../Calibration/CalibrationDataStorage.h"
 
 #include <cstring>
+#include <cmath>
 
 class DataReader{
     bool is_header_parsed = false; // true if header has been parsed
@@ -68,8 +69,14 @@ public:
         return dataHeader.MJD_begin;
     }
 
+    /// \brief check that available at least one chunk of point regard to chunk time
     inline bool eof() {
-        return count_read_points >= dataHeader.npoints;
+        return ceil(count_read_points + points_per_chunk + remainder) >= dataHeader.npoints;
+    }
+
+    /// \brief check that available at least count of points
+    inline bool eof(int count) {
+        return count_read_points + count >= dataHeader.npoints;
     }
 
     /// \brief read points regard to time chunk specified in ctor
