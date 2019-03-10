@@ -16,6 +16,7 @@ class DataReader{
     bool is_header_parsed = false;
     int count_read_points = 0, points_before_switch_calibration = 0;
     int floats_per_point = 0, size_per_point = 0;
+    float points_per_chunk = 0, remainder = 0; // how much point the time chunk consists of; the remainder while reading integer of points_per_chunk
     DataHeader dataHeader = {};
 
     CalibrationDataStorage *calibration;
@@ -68,7 +69,8 @@ public:
         readNextPoints((float *) to.data);
     }
     */
-    void readNextPoints(float *to, int count = 1);
+    int readNextPoints(float *to);
+    void readNextPoints(float *to, int count);
 };
 
 #endif //PRAO_COMPRESSER_DATEREADER_H

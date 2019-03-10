@@ -13,6 +13,7 @@ DataReader::DataReader(string path, double starSeconds_timeChunk_dur) {
 
     timeChunk_duration_star = starSeconds_timeChunk_dur;
     timeChunk_duration_sun = to_SunTime(starSeconds_timeChunk_dur);
+    points_per_chunk = float(timeChunk_duration_sun / dataHeader.tresolution);
 }
 
 DataReader::~DataReader() {
@@ -27,6 +28,14 @@ void DataReader::setCalibrationData(CalibrationDataStorage *calibrationData){
     updateCalibrationData();
 }
 
+
+int DataReader::readNextPoints(float *point) {
+    int count = int(points_per_chunk + remainder + 0.5);
+    remainder += points_per_chunk - count;
+    readNextPointsInternal(point, count, 0, count);
+
+    return count;
+}
 
 void DataReader::readNextPoints(float *point, int count) {
     readNextPointsInternal(point, count, 0, count);
