@@ -25,7 +25,7 @@ public:
                                                                                                             array,
                                                                                                             arrayNum,
                                                                                                             arraySize,
-                                                                                                            0.5, 0.5) {
+                                                                                                            0.25f, 0.75f) {
     }
 
     MetricsCalculator(OpenCLContext context, float *array, int arrayNum, int arraySize, float leftPercentile,
@@ -46,7 +46,7 @@ private:
     int arrayNum{};
     int arraySize{};
     float *array{};
-    metrics *outMetrics{};
+
     size_t globalWorkSize{};
     size_t localWorkSize{};
     size_t inputBufferSize{};

@@ -22,11 +22,11 @@ void MetricsCalculator::calc() {
 
     printError("error writing input array to buffer", clError);
 
-    clError = clSetKernelArg(context.getWorkingKernel(), 0, sizeof(inputBuffer), (void *) &inputBuffer);
+    clError = clSetKernelArg(context.getWorkingKernel(), 0, sizeof(cl_mem), (void *) &inputBuffer);
     printError("error setting input array (of arrays)", clError);
 
-    clError = clSetKernelArg(context.getWorkingKernel(), 1, sizeof(outBuffer), (void *) &outBuffer);
-    printError("error setting dispersion output array", clError);
+    clError = clSetKernelArg(context.getWorkingKernel(), 1, sizeof(cl_mem), (void *) &outBuffer);
+    printError("error setting output array", clError);
 
     clError = clSetKernelArg(context.getWorkingKernel(), 2, sizeof(cl_int), (void *) &arraySize);
     printError("error setting array size", clError);
@@ -41,6 +41,7 @@ void MetricsCalculator::calc() {
                                      _globalWorkSize, _localWorkSize, 0, nullptr, nullptr);
     printError("error running kernel", clError);
 
+    metrics outMetrics[arrayNum];
     clError = clEnqueueReadBuffer(context.getClCommandQueue(), outBuffer, CL_TRUE, 0, outBufferSize, outMetrics,
                                   0, nullptr, nullptr);
     printError("error reading output buffer", clError);

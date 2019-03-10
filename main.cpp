@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
             array[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
         }
         clock_t tStart = clock();
-        MetricsCalculator calculator = MetricsCalculator(context, array, arrayNum, arraySize);
+        MetricsCalculator calculator = MetricsCalculator(context, array, arrayNum, arraySize, 0.02f, 1.0f - 0.3f);
         calculator.calc();
         std::cout << "elapsed time: " << (float) (clock() - tStart) / CLOCKS_PER_SEC << "s" << std::endl;
         return 0;
