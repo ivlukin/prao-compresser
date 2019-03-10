@@ -8,6 +8,7 @@
 #include <fstream>
 #include "OpenCLContext.h"
 #include <memory>
+#include <map>
 
 
 cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernelName[]) {
@@ -44,10 +45,6 @@ cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernel
 
     /* скомпилировать программу */
     ret = clBuildProgram(program, 1, &device, nullptr, nullptr, nullptr);
-    if (ret != 0) {
-        std::cout << "kernel compiling error. ret: " << ret << std::endl;
-    }
-
     if (ret == -11) {
         // Determine the size of the log
         size_t log_size;
@@ -61,6 +58,9 @@ cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernel
 
         // Print the log
         printf("%s\n", log);
+        exit(-1);
+    } else if (ret != 0 && ret != -11) {
+        std::cout << "kernel compiling error. ret: " << ret << std::endl;
         exit(-1);
     }
 
@@ -76,7 +76,7 @@ cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernel
 
 
 void OpenCLContext::initMetricsKernels() {
-    if (algorithm == 0)
+    if (algorithm == 1)
         workingKernel = compile_kernel("../Processing/Kernels/nth_element.cl", "getMetrics");
     else
         workingKernel = compile_kernel("../Processing/Kernels/heapSort.cl", "getMetrics");
@@ -86,66 +86,84 @@ OpenCLContext &OpenCLContext::operator=(const OpenCLContext &oclContext) {
     if (this == &oclContext)
         return *this;
 
-    platform_id = oclContext.platform_id;
-    ret_num_platforms = oclContext.ret_num_platforms;
-    ret_num_devices = oclContext.ret_num_devices;
     context = oclContext.context;
     command_queue = oclContext.command_queue;
     device = oclContext.device;
     workingKernel = oclContext.workingKernel;
-    deviceType = oclContext.deviceType;
     algorithm = oclContext.algorithm;
 
     return *this;
 }
 
 void OpenCLContext::initContext() {
-    std::cout << "initializating context..." << std::endl;
+    //std::cout << "initializating context..." << std::endl;
     int ret = -1;
-    /* получение platform_id и количества платформ */
-    cl_platform_id platforms[10];
-    ret = clGetPlatformIDs(10, platforms, &ret_num_platforms);
-
-    if (ret != 0) {
-        std::cout << "fail getting platform id. ret: " << ret << std::endl;
-        exit(-1);
-    }
-    if (deviceType == 0) {
-        /* получение id GPU девайса */
-        platform_id = platforms[0];
-        ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device, &ret_num_devices);
-        if (ret != 0) {
-            std::cout << "fail getting gpu device id. ret: " << ret << std::endl;
-            exit(-1);
-        }
-    } else {
-        /* получение id CPU девайса */
-        platform_id = platforms[1];
-        ret = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_CPU, 1, &device, &ret_num_devices);
-        if (ret != 0) {
-            std::cout << "fail getting cpu device id. ret: " << ret << std::endl;
-            exit(-1);
-        }
-    }
-
+    scanDevices();
+    scanAlgoritm();
     /* создание контекста */
     context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &ret);
     if (ret != 0) {
-        std::cout << "fail creating context. ret: " << ret << std::endl;
+        std::cout << "fail creating context. ret: " << ret <<
+                  std::endl;
         exit(-1);
     }
 
     /* создание command queue (пока не совсем понятно что это */
     command_queue = clCreateCommandQueue(context, device, 0, &ret);
     if (ret != 0) {
-        std::cout << "fail creating command_queue. ret: " << ret << std::endl;
+        std::cout << "fail creating command_queue. ret: " << ret <<
+                  std::endl;
         exit(-1);
     }
 }
 
-OpenCLContext::OpenCLContext(int deviceType, int algorithmType) {
-    this->deviceType = deviceType;
-    this->algorithm = algorithmType;
+
+void OpenCLContext::scanDevices() {
+    cl_int ret = -1;
+    cl_uint ret_num_platforms;
+    ret = clGetPlatformIDs(0, nullptr, &ret_num_platforms);
+    auto *platforms = new cl_platform_id[ret_num_platforms];
+    ret = clGetPlatformIDs(ret_num_platforms, platforms, nullptr);
+    int globalDeviceCount = 0;
+    std::map<int, cl_device_id> deviceIdMap;
+    std::cout << "choose device number" << std::endl;
+    for (int i = 0; i < ret_num_platforms; ++i) {
+        for (int j = 1; j < 3; j++) {
+            cl_platform_id platform_id = platforms[i];
+
+            cl_uint ret_num_devices;
+            ret = clGetDeviceIDs(platform_id, 1 << j, 0, nullptr, &ret_num_devices);
+            if (ret == CL_DEVICE_NOT_FOUND)
+                continue;
+
+            cl_device_id devices[ret_num_devices];
+            ret = clGetDeviceIDs(platform_id, 1 << j, ret_num_devices, devices, nullptr);
+            if (ret != 0) {
+                std::cout << "failed getting devices" << std::endl;
+                exit(-1);
+            }
+            size_t size;
+            for (int z = 0; z < ret_num_devices; z++) {
+                globalDeviceCount++;
+                deviceIdMap[globalDeviceCount] = devices[z];
+                char *vendor = NULL;
+                clGetDeviceInfo(devices[z], CL_DEVICE_NAME, NULL, NULL, &size);
+                vendor = (char *) malloc(sizeof(char) * size);
+                clGetDeviceInfo(devices[z], CL_DEVICE_NAME, size, vendor, NULL);
+                std::cout << globalDeviceCount << ") " << vendor << std::endl;
+            }
+        }
+    }
+    int chosenDeviceNumber;
+    std::cin >> chosenDeviceNumber;
+    device = deviceIdMap[chosenDeviceNumber];
+}
+
+void OpenCLContext::scanAlgoritm() {
+    std::cout << "choose preferred algoritm" << std::endl;
+    std::cout << "1) nth_element" << std::endl;
+    std::cout << "2) sorting" << std::endl;
+    std::cin >> algorithm;
 }
 
 

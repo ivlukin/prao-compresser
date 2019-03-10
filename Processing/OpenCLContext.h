@@ -20,7 +20,6 @@ class OpenCLContext {
 public:
     OpenCLContext() = default;
 
-    OpenCLContext(int deviceType, int algorithmType);
 
     /**
      * Оператор присваивания. просто копирует все поля
@@ -31,9 +30,6 @@ public:
 
 
 private: /* gpu properties */
-    cl_platform_id platform_id;
-    cl_uint ret_num_platforms;
-    cl_uint ret_num_devices;
     cl_context context;
     cl_command_queue command_queue;
     cl_device_id device;
@@ -41,15 +37,11 @@ private: /* gpu properties */
 private: /* kernels */
 
     cl_kernel workingKernel;
-    /**
-     * CPU или GPU
-     * GPU = 0, CPU = 1
-     */
-    int deviceType;
+
 
     /**
      * Используемый алгоритм.
-     * nth_element = 0, heapSort = 1
+     * nth_element = 1, heapSort = 2
      */
     int algorithm;
 
@@ -61,6 +53,16 @@ private:
  * @return скомпилированный и готовый к работе кернел
  */
     cl_kernel compile_kernel(const char filename[], const char kernelName[]);
+
+    /**
+     * Сканирует все доступные девайсы и получает от пользователя ответ, какой девайс использовать
+     */
+    void scanDevices();
+
+    /**
+     * Спрашивает у пользователя, какой алгоритм использовать
+     */
+    void scanAlgoritm();
 
 public:
     /**
