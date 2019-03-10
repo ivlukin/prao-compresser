@@ -9,10 +9,11 @@
 #include "Metrics/MetricsType.h"
 #include "Processing/MetricsCalculator.h"
 
-Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context) {
+Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context, size_t localWorkSize) {
     this->context = context;
     this->fileListPath = fileListPath;
     this->calibrationListPath = calibrationListPath;
+    this->localWorkSize = localWorkSize;
 }
 
 
@@ -27,27 +28,34 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
         int i = 1;
+        clock_t tStart;
         try {
+            tStart = clock();
             while (!reader->eof()) {
+
+                /* wtf? */
+                if (i > 360)
+                    break;
                 int count = reader->readNextPoints(data_reordered_buffer);
-                clock_t start = clock();
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
+                                                       localWorkSize,
                                                        leftPercentile,
                                                        rightPercentile);
                 auto *metrics_buffer = calculator.calc();
-                std::cout << "opencl work time: " << (float) (clock() - start) / (float) CLOCKS_PER_SEC << "s"
-                          << std::endl;
                 if (i % 30 == 0)
                     std::cout << i << " arrays calculated..." << std::endl;
                 /* пока так. но вообще то это надо записывать. */
                 delete[] metrics_buffer;
                 ++i;
             }
+            std::cout << "calculating work time: " << (float) (clock() - tStart) / (float) CLOCKS_PER_SEC << "s"
+                      << std::endl;
         }
         catch (logic_error e) {
-
+            std::cout << e.what() << std::endl;
         }
+
 
     }
 }
