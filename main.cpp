@@ -9,29 +9,31 @@ int main(int argc, char *argv[]) {
 
 //
 //    testCalibrationStorage();
-    // testReader();
-    std::vector<std::string> args;
-    for (int i = 1; i < argc; ++i) {
-        args.emplace_back(argv[i]);
-    }
-    if (args[0] == "-f") {
-        std::cout << "processing file..." << std::endl;
-        OpenCLContext context = OpenCLContext(0, 0);
-        context.initContext();
-        context.initMetricsKernels();
-        clock_t tStart = clock();
-        Compresser compresser = Compresser("../resources/filesListBig.txt", "../resources/bigCalibrationParts.txt",
-                                           context, 16);
-        compresser.run(10, 0.02f, 0.7f);
-        std::cout << "elapsed time: " << (float) (clock() - tStart) / CLOCKS_PER_SEC << "s" << std::endl;
-        return 0;
-    } else if (args[0] == "-d") {
-        //TODO: processing directory
-        std::cout << "processing directory..." << std::endl;
+    if (false){
+        testReader();
     } else {
-        std::cout << "ty pidor" << std::endl;
+        std::vector<std::string> args;
+        for (int i = 1; i < argc; ++i) {
+            args.emplace_back(std::string(argv[i]));
+        }
+        if (args[0] == "-f") {
+            std::cout << "processing file..." << std::endl;
+            OpenCLContext context = OpenCLContext(0, 0);
+            context.initContext();
+            context.initMetricsKernels();
+            clock_t tStart = clock();
+            Compresser compresser = Compresser("../resources/filesListBig.txt", "../resources/bigCalibrationParts.txt",
+                                               context, 16);
+            compresser.run(10, 0.02f, 0.7f);
+            std::cout << "elapsed time: " << (float) (clock() - tStart) / CLOCKS_PER_SEC << "s" << std::endl;
+            return 0;
+        } else if (args[0] == "-d") {
+            //TODO: processing directory
+            std::cout << "processing directory..." << std::endl;
+        } else {
+            std::cout << "ty pidor" << std::endl;
+        }
     }
-
 
 }
 

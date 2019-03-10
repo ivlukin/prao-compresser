@@ -27,10 +27,12 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         DataReader *reader = item.getDataReader(starSeconds);
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
+
+
+
         int i = 1;
-        clock_t tStart;
+        clock_t tStart, sum = 0;
         try {
-            tStart = clock();
             while (!reader->eof()) {
                 int count = reader->readNextPoints(data_reordered_buffer);
                 MetricsCalculator
@@ -38,15 +40,19 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
                                                        localWorkSize,
                                                        leftPercentile,
                                                        rightPercentile);
+                tStart = clock();
                 auto *metrics_buffer = calculator.calc();
+                sum += clock() - tStart;
+
                 if (i % 30 == 0)
                     std::cout << i << " arrays calculated..." << std::endl;
                 /* пока так. но вообще то это надо записывать. */
                 delete[] metrics_buffer;
                 ++i;
             }
-            std::cout << "calculating work time: " << (float) (clock() - tStart) / (float) CLOCKS_PER_SEC << "s"
+            std::cout << "calculating work time: " << (float) (sum) / (float) CLOCKS_PER_SEC << "s"
                       << std::endl;
+
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;
