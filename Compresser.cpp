@@ -26,27 +26,28 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         DataReader *reader = item.getDataReader(starSeconds);
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
+        int count;
         int i = 1;
         try {
+            clock_t tStart = clock();
             while (!reader->eof()) {
-                int count = reader->readNextPoints(data_reordered_buffer);
-                clock_t start = clock();
+                count = reader->readNextPoints(data_reordered_buffer);
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
                                                        leftPercentile,
                                                        rightPercentile);
                 auto *metrics_buffer = calculator.calc();
-                std::cout << "opencl work time: " << (float) (clock() - start) / (float) CLOCKS_PER_SEC << "s"
-                          << std::endl;
                 if (i % 30 == 0)
                     std::cout << i << " arrays calculated..." << std::endl;
                 /* пока так. но вообще то это надо записывать. */
                 delete[] metrics_buffer;
                 ++i;
             }
+            std::cout << "calculating work time: " << (float) (clock() - tStart) / (float) CLOCKS_PER_SEC << "s"
+                      << std::endl;
         }
         catch (logic_error e) {
-
+            std::cout << e.what() << std::endl;
         }
 
     }

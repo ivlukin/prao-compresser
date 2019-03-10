@@ -19,9 +19,7 @@ private:
 
 
 public:
-    Compresser() {
-
-    }
+    Compresser() = default;
 
     Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context);
 
