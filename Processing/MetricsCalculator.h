@@ -19,7 +19,7 @@ public:
      * @param arrayNum - количество массивов
      * @param arraySize - размер одного массива
      */
-    void calc();
+    metrics* calc();
 
     MetricsCalculator(OpenCLContext context, float *array, int arrayNum, int arraySize) : MetricsCalculator(context,
                                                                                                             array,

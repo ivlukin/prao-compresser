@@ -5,7 +5,7 @@
 #include <iostream>
 #include "MetricsCalculator.h"
 
-void MetricsCalculator::calc() {
+metrics *MetricsCalculator::calc() {
     std::cout << "starting calculating metrics..." << std::endl;
 
     size_t _localWorkSize[1];
@@ -41,10 +41,11 @@ void MetricsCalculator::calc() {
                                      _globalWorkSize, _localWorkSize, 0, nullptr, nullptr);
     printError("error running kernel", clError);
 
-    metrics outMetrics[arrayNum];
+    auto *outMetrics = new metrics[arrayNum];
     clError = clEnqueueReadBuffer(context.getClCommandQueue(), outBuffer, CL_TRUE, 0, outBufferSize, outMetrics,
                                   0, nullptr, nullptr);
     printError("error reading output buffer", clError);
+    return outMetrics;
 
 }
 
