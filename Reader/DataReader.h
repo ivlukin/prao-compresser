@@ -64,6 +64,11 @@ public:
         return floats_per_point;
     }
 
+    /// \breif get DataHeader
+    inline DataHeader getDataHeader() {
+        return dataHeader;
+    }
+
     /// \breif get date start in MJD format
     inline float get_MJD_begin(){
         return dataHeader.MJD_begin;

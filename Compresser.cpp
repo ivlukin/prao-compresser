@@ -2,12 +2,7 @@
 // Created by sorrow on 10.03.19.
 //
 
-#include <fstream>
 #include "Compresser.h"
-#include "Calibration/CalibrationDataStorage.h"
-#include "Reader/FilesListItem.h"
-#include "Metrics/MetricsType.h"
-#include "Processing/MetricsCalculator.h"
 
 Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context, size_t localWorkSize) {
     this->context = context;
@@ -29,6 +24,7 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         reader->setCalibrationData(storage);
 
 
+        MetricsContainer container(reader);
 
         int i = 1;
         clock_t tStart, sum = 0;
@@ -42,17 +38,17 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
                                                        rightPercentile);
                 tStart = clock();
                 auto *metrics_buffer = calculator.calc();
+                container.addNewMetrics(metrics_buffer);
                 sum += clock() - tStart;
 
                 if (i % 30 == 0)
                     std::cout << i << " arrays calculated..." << std::endl;
-                /* пока так. но вообще то это надо записывать. */
-                delete[] metrics_buffer;
                 ++i;
             }
             std::cout << "calculating work time: " << (float) (sum) / (float) CLOCKS_PER_SEC << "s"
                       << std::endl;
 
+            container.saveToFile("output");
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;

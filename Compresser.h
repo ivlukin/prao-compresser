@@ -8,8 +8,14 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
+
 #include "Processing/OpenCLContext.h"
+#include "Processing/MetricsCalculator.h"
 #include "Calibration/CalibrationDataStorage.h"
+#include "Metrics/MetricsContainer.h"
+#include "Reader/FilesListItem.h"
+
 
 class Compresser {
 private:
