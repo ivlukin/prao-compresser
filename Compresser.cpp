@@ -16,27 +16,30 @@ Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLCont
 }
 
 
-void Compresser::run() {
+void Compresser::run(double starSeconds, float leftPercentile, float rightPercentile) {
     /* get calibration files */
     CalibrationDataStorage *storage = readCalibrationDataStorage(calibrationListPath);
     ifstream in(fileListPath);
     while (!in.eof()) {
         FilesListItem item;
         in >> item;
-        DataReader *reader = item.getDataReader(10);
+        DataReader *reader = item.getDataReader(starSeconds);
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
         int i = 1;
         try {
             while (!reader->eof()) {
                 int count = reader->readNextPoints(data_reordered_buffer);
+                clock_t start = clock();
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
-                                                       0.02f,
-                                                       0.7f);
+                                                       leftPercentile,
+                                                       rightPercentile);
                 auto *metrics_buffer = calculator.calc();
-
-                std::cout << i << ": smth calculated..." << std::endl;
+                std::cout << "opencl work time: " << (float) (clock() - start) / (float) CLOCKS_PER_SEC << "s"
+                          << std::endl;
+                if (i % 30 == 0)
+                    std::cout << i << " arrays calculated..." << std::endl;
                 /* пока так. но вообще то это надо записывать. */
                 delete[] metrics_buffer;
                 ++i;

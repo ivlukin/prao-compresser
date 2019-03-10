@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         clock_t tStart = clock();
         Compresser compresser = Compresser("../resources/filesListBig.txt", "../resources/bigCalibrationParts.txt",
                                            context);
-        compresser.run();
+        compresser.run(10, 0.02f, 0.7f);
         std::cout << "elapsed time: " << (float) (clock() - tStart) / CLOCKS_PER_SEC << "s" << std::endl;
         return 0;
     } else if (args[0] == "-d") {

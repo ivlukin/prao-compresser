@@ -25,7 +25,7 @@ public:
 
     Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context);
 
-    void run();
+    void run(double starSeconds, float leftPercentile, float rightPercentile);
 
     CalibrationDataStorage *readCalibrationDataStorage(char *path_calibration);
 };
