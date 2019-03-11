@@ -12,6 +12,7 @@
 using namespace std;
 
 struct metrics {
+    static const int metric_count = 9;
     float min; 					// minimum of all
     float max; 					// maximum of all
     float max_ind; 				// index of maximum of all
