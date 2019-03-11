@@ -48,7 +48,8 @@ void Compresser::run() {
             std::cout << "calculating work time: " << (float) (sum) / (float) CLOCKS_PER_SEC << "s"
                       << std::endl;
 
-            container.saveToFile("output");
+            string dst_directory = item.filepath;
+            container.saveToFile(dst_directory + ".processed");
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;
