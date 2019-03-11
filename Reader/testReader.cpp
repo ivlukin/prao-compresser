@@ -26,7 +26,8 @@ CalibrationDataStorage * readCalibrationDataStorage(string path_calibration){
 char* readKernel(char *&source_str, size_t &source_size){
     size_t MAX_SOURCE_SIZE = 1000000;
     FILE *fp;
-    const char fileName[] = "../Processing/Kernels/nth_element.cl";
+    const char fileName[] = "../Resources/bitonicSort.cl";
+    //const char fileName[] = "../Processing/Kernels/nth_element.cl";
     //const char fileName[] = "../Processing/Kernels/heapSort.cl";
     int i;
 
@@ -55,11 +56,11 @@ const float left_percentile = 0.02f;
 const float right_percentile = 1.0f - 0.3f;
 
 
-const size_t global_workgroup = 33 * 48;
-const size_t local_workgroup = 12;
+const size_t global_workgroup[] = { 512, 33 * 48 };
+const size_t local_workgroup[] = { 512, 1 };
 
-size_t buffer_size;
-size_t buffer_size_out;
+size_t buffer_size = 1622016;
+size_t buffer_size_out = 281 * sizeof(metrics) * 33 * 48;
 
 
 void start(){
@@ -77,9 +78,11 @@ void start(){
 
 
     ret = clGetPlatformIDs(10, platform_id, &ret_num_platforms);
-    ret = clGetDeviceIDs(platform_id[1], CL_DEVICE_TYPE_CPU, 1, &devices, &ret_num_devices);
+    ret = clGetDeviceIDs(platform_id[0], CL_DEVICE_TYPE_GPU, 1, &devices, &ret_num_devices);
     ret = clGetDeviceInfo(devices, CL_DEVICE_NAME, 0x100, buff, (size_t *)&ret);
     cout << buff << endl;
+
+
     context = clCreateContext(NULL, 1, &devices, NULL, NULL, &ret);
     queue = clCreateCommandQueue(context, devices, 0, &ret);
 
@@ -105,14 +108,14 @@ void start(){
     kernel = clCreateKernel(program, "getMetrics", &ret);
 
     cl_in_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * buffer_size, 0, &ret);
-    cl_in2_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size_out, 0, &ret);
-    //cl_out_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size, 0, &ret);
+    //cl_out_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * buffer_size, 0, &ret);
+    cl_out_buff = clCreateBuffer(context, CL_MEM_READ_WRITE, buffer_size_out, 0, &ret);
     ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), &cl_in_buff);
-    ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), &cl_in2_buff);
-    //ret = clSetKernelArg(kernel, 2, sizeof(cl_int), &size_chunk_floats);
+    ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), &cl_out_buff);
     ret = clSetKernelArg(kernel, 3, sizeof(cl_float), &left_percentile);
     ret = clSetKernelArg(kernel, 4, sizeof(cl_float), &right_percentile);
-    //ret = clSetKernelArg(kernel, 1, size_chunk_floats * 2 * sizeof(cl_float), NULL);
+    ret = clSetKernelArg(kernel, 5, 1024 * sizeof(cl_float), NULL);
+    ret = clSetKernelArg(kernel, 6, sizeof(metrics), NULL);
     //ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), &cl_out_buff);
 }
 
@@ -130,13 +133,23 @@ void process_next(int count){
 
     ret = clSetKernelArg(kernel, 2, sizeof(cl_int), &count);
     ret = clEnqueueWriteBuffer(queue, cl_in_buff, CL_TRUE, 0, sizeof(cl_float) * buffer_size, data_reordered_buffer, 0, NULL, NULL);
-    ret = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &global_workgroup, &local_workgroup, 0, NULL, NULL);
-    ret = clEnqueueReadBuffer(queue, cl_in2_buff, CL_TRUE, 0, buffer_size_out, metrics_buffer, 0, NULL, NULL); // checking sorting was performed without errors
+    ret = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, global_workgroup, local_workgroup, 0, NULL, NULL);
+    ret = clEnqueueReadBuffer(queue, cl_in_buff, CL_TRUE, 0, sizeof(cl_float) * buffer_size, data_reordered_buffer, 0, NULL, NULL); // checking sorting was performed without errors
 
+    for (int i = 0; i < 33 * 48; ++i)
+    {
+        float *curr = data_reordered_buffer + 1024 * i;
+        for (int j = 0; j < 1023; ++j){
+            if (curr[j] < curr[j + 1]){
+            //if (curr[j] != 0){
+                cout << i << " " << j << endl;
+            }
+        }
+    }
 
     fTimeSum += clock() - fTimeStart;
 
-    metrics::check_natively_over_CPU(data_reordered_buffer, metrics_buffer, global_workgroup, count, left_percentile, right_percentile);
+    //metrics::check_natively_over_CPU(data_reordered_buffer, metrics_buffer, global_workgroup, count, left_percentile, right_percentile);
 }
 
 
@@ -151,10 +164,9 @@ void testReader(){
         FilesListItem item;
         in >> item;
         DataReader * reader = item.getDataReader(10);
-        buffer_size = reader->getNeedBufferSize();
-        data_reordered_buffer = new float[reader->getNeedBufferSize()];
-        buffer_size_out = sizeof(metrics) * reader->getPointSize();
-        metrics_buffer = new metrics[reader->getPointSize()];
+        data_reordered_buffer = new float[buffer_size];
+        //buffer_size_out = sizeof(metrics) * reader->getPointSize() * 2;
+        //metrics_buffer = new metrics[reader->getPointSize()];
         start();
         reader->setCalibrationData(storage);
 
@@ -162,11 +174,12 @@ void testReader(){
         start = clock();
         int i = 0;
         try {
-            while(!reader->eof()) {
-                int count = reader->readNextPoints(data_reordered_buffer);
-                for (int j1 = 0; j1 < global_workgroup * count; ++j1)
-                    if (((float *)(data_reordered_buffer))[j1] == 0)
-                        cout << "found null: " << j1 / count << " " << j1 % count << endl;
+            int count = 1024;
+            while(!reader->eof(1024)) {
+                reader->readNextPoints(data_reordered_buffer, count);
+//                for (int j1 = 0; j1 < global_workgroup * count; ++j1)
+//                    if (((float *)(data_reordered_buffer))[j1] == 0)
+//                        cout << "found null: " << j1 / count << " " << j1 % count << endl;
 
                 process_next(count);
 
