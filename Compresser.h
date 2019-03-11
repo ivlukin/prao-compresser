@@ -19,20 +19,53 @@
 
 class Compresser {
 private:
-    char *fileListPath;
-    char *calibrationListPath;
-    OpenCLContext context;
-    size_t localWorkSize;
+    /* это нужно спросить у пользователя */
+    std::string fileListPath;
+    std::string calibrationListPath;
+    size_t localWorkSize{};
+    double starSeconds{};
+    float leftPercentile{};
+    float rightPercentile{};
+
+    /**
+     * Спрашивает у пользователя
+     * localWorkSize, starSeconds, leftPercentile, rightPercentile
+     */
+    void askData();
+
+    /**
+     * Спрашивает у пользователя
+     * fileListPath
+     * calibrationListPath
+     */
+    void askFiles();
+
+    /* это приходит в конструкторе */
+    /**
+     * Хостовая часть
+     */
+    OpenCLContext context{};
 
 
 public:
     Compresser() = default;
 
-    Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context, size_t localWorkSize);
+    explicit Compresser(OpenCLContext context);
 
-    void run(double starSeconds, float leftPercentile, float rightPercentile);
+    /**
+     * Основной метод.
+     * Запускает калибровку, считывание, сжатие, запись данных
+     * По всем файлам из fileListPath
+     */
+    void run();
 
-    CalibrationDataStorage *readCalibrationDataStorage(char *path_calibration);
+    /**
+     * Служебный метод
+     * Получает CalibrationDataStorage
+     * @param path_calibration - файл с путями до файлов калибровки
+     * @return CalibrationDataStorage
+     */
+    CalibrationDataStorage *readCalibrationDataStorage(std::string path_calibration);
 };
 
 

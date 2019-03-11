@@ -1,18 +1,19 @@
+#include <utility>
+
 //
 // Created by sorrow on 10.03.19.
 //
 
 #include "Compresser.h"
 
-Compresser::Compresser(char *fileListPath, char *calibrationListPath, OpenCLContext context, size_t localWorkSize) {
+Compresser::Compresser(OpenCLContext context) {
     this->context = context;
-    this->fileListPath = fileListPath;
-    this->calibrationListPath = calibrationListPath;
-    this->localWorkSize = localWorkSize;
+    askData();
+    askFiles();
 }
 
 
-void Compresser::run(double starSeconds, float leftPercentile, float rightPercentile) {
+void Compresser::run() {
     /* get calibration files */
     CalibrationDataStorage *storage = readCalibrationDataStorage(calibrationListPath);
     ifstream in(fileListPath);
@@ -22,7 +23,6 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
         DataReader *reader = item.getDataReader(starSeconds);
         auto *data_reordered_buffer = new float[reader->getNeedBufferSize()];
         reader->setCalibrationData(storage);
-
 
         MetricsContainer container(reader);
 
@@ -58,14 +58,32 @@ void Compresser::run(double starSeconds, float leftPercentile, float rightPercen
     }
 }
 
-CalibrationDataStorage *Compresser::readCalibrationDataStorage(char *path_calibration) {
+CalibrationDataStorage *Compresser::readCalibrationDataStorage(std::string path_calibration) {
     float start = 0, diff = 0;
     auto *storage = new CalibrationDataStorage();
 
     start = clock();
-    std::string path(path_calibration);
+    std::string path(std::move(path_calibration));
     storage->add_items_from_file(path);
     diff = (clock() - start) / CLOCKS_PER_SEC;
     cout << "reading calibration file took " << diff << " sec" << endl;
     return storage;
+}
+
+void Compresser::askData() {
+    std::cout << "enter left percentile (0.02 for example):" << std::endl;
+    std::cin >> leftPercentile;
+    std::cout << "enter right percentile (0.7 for example):" << std::endl;
+    std::cin >> rightPercentile;
+    std::cout << "enter star seconds (10 for example):" << std::endl;
+    std::cin >> starSeconds;
+    std::cout << "enter local work size (2 for example):" << std::endl;
+    std::cin >> localWorkSize;
+}
+
+void Compresser::askFiles() {
+    std::cout << "enter full path to file containing list of files:" << std::endl;
+    std::cin >> fileListPath;
+    std::cout << "enter full path to file containing calibration info" << std::endl;
+    std::cin >> calibrationListPath;
 }
