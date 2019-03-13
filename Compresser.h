@@ -26,6 +26,12 @@ private:
     double starSeconds{};
     float leftPercentile{};
     float rightPercentile{};
+    std::string outputPath;
+public:
+    Compresser(const string &fileListPath, const string &calibrationListPath, size_t localWorkSize, double starSeconds,
+               float leftPercentile, float rightPercentile, const string &outputPath, const OpenCLContext &context);
+
+private:
 
     /**
      * Спрашивает у пользователя

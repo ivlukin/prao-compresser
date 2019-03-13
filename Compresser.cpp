@@ -88,3 +88,15 @@ void Compresser::askFiles() {
     std::cout << "enter full path to file containing calibration info" << std::endl;
     std::cin >> calibrationListPath;
 }
+
+Compresser::Compresser(const string &fileListPath, const string &calibrationListPath, size_t localWorkSize,
+                       double starSeconds, float leftPercentile, float rightPercentile, const string &outputPath,
+                       const OpenCLContext &context) {
+    this->calibrationListPath = calibrationListPath;
+    this->fileListPath = fileListPath;
+    this->localWorkSize = localWorkSize;
+    this->starSeconds = starSeconds;
+    this->rightPercentile = rightPercentile;
+    this->leftPercentile = leftPercentile;
+    this->outputPath = outputPath;
+}
