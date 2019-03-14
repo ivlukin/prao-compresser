@@ -6,11 +6,6 @@
 
 #include "Compresser.h"
 
-Compresser::Compresser(OpenCLContext context) {
-    this->context = context;
-    askData();
-    askFiles();
-}
 
 
 void Compresser::run() {
@@ -71,32 +66,18 @@ CalibrationDataStorage *Compresser::readCalibrationDataStorage(std::string path_
     return storage;
 }
 
-void Compresser::askData() {
-    std::cout << "enter left percentile (0.02 for example):" << std::endl;
-    std::cin >> leftPercentile;
-    std::cout << "enter right percentile (0.7 for example):" << std::endl;
-    std::cin >> rightPercentile;
-    std::cout << "enter star seconds (10 for example):" << std::endl;
-    std::cin >> starSeconds;
-    std::cout << "enter local work size (2 for example):" << std::endl;
-    std::cin >> localWorkSize;
+
+Compresser::Compresser(char *configFile, const OpenCLContext context) {
+    this->context = context;
+
+    Config cfg = Config(configFile);
+    this->outputPath = cfg.getOutputPath();
+    this->leftPercentile = cfg.getLeftPercentile();
+    this->rightPercentile = cfg.getRightPercentile();
+    this->starSeconds = cfg.getRightPercentile();
+    this->localWorkSize = cfg.getLocalWorkSize();
+    this->fileListPath = cfg.getFileListPath();
+    this->calibrationListPath = cfg.getCalibrationListPath();
 }
 
-void Compresser::askFiles() {
-    std::cout << "enter full path to file containing list of files:" << std::endl;
-    std::cin >> fileListPath;
-    std::cout << "enter full path to file containing calibration info" << std::endl;
-    std::cin >> calibrationListPath;
-}
 
-Compresser::Compresser(const string &fileListPath, const string &calibrationListPath, size_t localWorkSize,
-                       double starSeconds, float leftPercentile, float rightPercentile, const string &outputPath,
-                       const OpenCLContext &context) {
-    this->calibrationListPath = calibrationListPath;
-    this->fileListPath = fileListPath;
-    this->localWorkSize = localWorkSize;
-    this->starSeconds = starSeconds;
-    this->rightPercentile = rightPercentile;
-    this->leftPercentile = leftPercentile;
-    this->outputPath = outputPath;
-}
