@@ -1,0 +1,9 @@
+{
+  "localWorkSize": 2,
+  "fileListPath": "/home/sorrow/CLionProjects/prao-compresser/resources/filesListBig.txt",
+  "calibrationListPath": "/home/sorrow/CLionProjects/prao-compresser/resources/bigCalibrationParts.txt",
+  "starSeconds": 10.0,
+  "leftPercentile": 0.02,
+  "rightPercentile": 0.7,
+  "outputPath": "/home/sorrow/output"
+}
