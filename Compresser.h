@@ -40,7 +40,7 @@ private:
 
 public:
     Compresser() = default;
-    Compresser(char* configFile, const OpenCLContext context);
+    Compresser(char* configFile, OpenCLContext context);
 
 
     /**

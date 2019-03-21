@@ -77,6 +77,8 @@ Compresser::Compresser(char *configFile, const OpenCLContext context) {
     this->localWorkSize = cfg.getLocalWorkSize();
     this->fileListPath = cfg.getFileListPath();
     this->calibrationListPath = cfg.getCalibrationListPath();
+    int algorithm = cfg.getAlgorithm();
+    this->context.initMetricsKernels(algorithm);
 }
 
 
