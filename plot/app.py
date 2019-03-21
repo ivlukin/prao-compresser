@@ -3,11 +3,9 @@ import dash
 import sys
 import dash_core_components as dcc
 import dash_html_components as html
-import numpy as np
 import plotly.graph_objs as go
 import logging
 import os
-import pandas as pd
 from file_loader import load
 
 metric_names = ['min', 'max', 'max_ind', 'average', 'median', 'variance', 'variance_bounded', 'left_bound', 'right_bound']
@@ -45,6 +43,7 @@ logger.setLevel(logging.DEBUG)
 
 df = load(os.path.expanduser('~/prao-data/output'))
 #df = load(os.path.expanduser('~/prao-data/011014_02_N1_00.pnt.processed'))
+#df.to_csv('azaza_new.csv')
 #df.to_csv('azaza.csv')
 
 #df = pd.read_csv('azaza.csv')  # TODO: remove
@@ -92,7 +91,6 @@ app.layout = html.Div([
     dash.dependencies.Output('graph-band-ray', 'figure'),
     [dash.dependencies.Input('ray-slider-1', 'value'), dash.dependencies.Input('band-slider-1', 'value')])
 def update_figure_1(selected_ray, selected_band):
-    logging.debug('Selected ray_num = %d', selected_ray)
     filtered_df = df[(df['ray_num'] == selected_ray) & (df['band_num'] == selected_band)]
     traces = []
     for i in filtered_df.metric_num.unique():
@@ -127,7 +125,6 @@ def update_figure_1(selected_ray, selected_band):
     dash.dependencies.Output('graph-ray-metric', 'figure'),
     [dash.dependencies.Input('ray-slider-2', 'value'), dash.dependencies.Input('metric-slider-2', 'value')])
 def update_figure_2(selected_ray, selected_metric):
-    logging.debug('Selected ray_num = %d', selected_ray)
     filtered_df = df[(df['ray_num'] == selected_ray) & (df['metric_num'] == selected_metric)]
     traces = []
     for i in filtered_df.band_num.unique():
