@@ -16,7 +16,7 @@ istream &operator>>(istream & in, FilesListItem& dt){
     sscanf(tmp.c_str(), "%d-%d-%d %d:%d:%d", &dt.time_UTC.tm_year, &dt.time_UTC.tm_mon, &dt.time_UTC.tm_mday, &dt.time_UTC.tm_hour, &dt.time_UTC.tm_min, &dt.time_UTC.tm_sec);
     tm_toUTC(dt.time_UTC);
 
-    getline(in, dt.filepath, ';');
+    getline(in, dt.filename, ';');
     getline(in, dt.filepath, ';');
     dt.filepath = regex_replace(dt.filepath, regex("(\\\\){2}"), "/");
 

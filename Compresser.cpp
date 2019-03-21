@@ -43,8 +43,7 @@ void Compresser::run() {
             std::cout << "calculating work time: " << (float) (sum) / (float) CLOCKS_PER_SEC << "s"
                       << std::endl;
 
-            string dst_directory = item.filepath;
-            container.saveToFile(dst_directory + ".processed");
+            container.saveToFile(outputPath + '\\' + item.filename + ".processed");
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;
@@ -74,7 +73,7 @@ Compresser::Compresser(char *configFile, const OpenCLContext context) {
     this->outputPath = cfg.getOutputPath();
     this->leftPercentile = cfg.getLeftPercentile();
     this->rightPercentile = cfg.getRightPercentile();
-    this->starSeconds = cfg.getRightPercentile();
+    this->starSeconds = cfg.getStarSeconds();
     this->localWorkSize = cfg.getLocalWorkSize();
     this->fileListPath = cfg.getFileListPath();
     this->calibrationListPath = cfg.getCalibrationListPath();

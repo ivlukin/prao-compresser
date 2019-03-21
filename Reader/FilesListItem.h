@@ -16,6 +16,7 @@ using namespace std;
 
 struct FilesListItem{
     tm time_UTC = {};
+    string filename = string();
     string filepath = string();
     int nbands = 0, npoints = 0;
     double tresolution = 0, star_time_start = 0, star_time_end = 0, time_JD = 0;
