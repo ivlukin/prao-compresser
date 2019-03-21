@@ -33,7 +33,6 @@ int main(int argc, char **argv) {
 
         OpenCLContext context = OpenCLContext();
         context.initContext();
-        context.initMetricsKernels();
         Compresser compresser = Compresser(argv[2], context);
         clock_t tStart = clock();
         compresser.run();
