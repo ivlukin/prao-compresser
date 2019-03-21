@@ -75,7 +75,7 @@ cl_kernel OpenCLContext::compile_kernel(const char filename[], const char kernel
 }
 
 
-void OpenCLContext::initMetricsKernels() {
+void OpenCLContext::initMetricsKernels(int algorithm) {
     if (algorithm == 1)
         workingKernel = compile_kernel("../Processing/Kernels/nth_element.cl", "getMetrics");
     else
@@ -90,7 +90,6 @@ OpenCLContext &OpenCLContext::operator=(const OpenCLContext &oclContext) {
     command_queue = oclContext.command_queue;
     device = oclContext.device;
     workingKernel = oclContext.workingKernel;
-    algorithm = oclContext.algorithm;
 
     return *this;
 }
@@ -99,7 +98,6 @@ void OpenCLContext::initContext() {
     //std::cout << "initializating context..." << std::endl;
     int ret = -1;
     scanDevices();
-    scanAlgoritm();
     /* создание контекста */
     context = clCreateContext(nullptr, 1, &device, nullptr, nullptr, &ret);
     if (ret != 0) {
@@ -157,13 +155,6 @@ void OpenCLContext::scanDevices() {
     int chosenDeviceNumber;
     std::cin >> chosenDeviceNumber;
     device = deviceIdMap[chosenDeviceNumber];
-}
-
-void OpenCLContext::scanAlgoritm() {
-    std::cout << "choose preferred algoritm" << std::endl;
-    std::cout << "1) nth_element" << std::endl;
-    std::cout << "2) sorting" << std::endl;
-    std::cin >> algorithm;
 }
 
 

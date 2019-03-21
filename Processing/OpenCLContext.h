@@ -38,13 +38,6 @@ private: /* kernels */
 
     cl_kernel workingKernel;
 
-
-    /**
-     * Используемый алгоритм.
-     * nth_element = 1, heapSort = 2
-     */
-    int algorithm;
-
 private:
     /**
  * Собирает и компилирует ядро
@@ -59,16 +52,11 @@ private:
      */
     void scanDevices();
 
-    /**
-     * Спрашивает у пользователя, какой алгоритм использовать
-     */
-    void scanAlgoritm();
-
 public:
     /**
      * сортирует ядра подсчета метрик
      */
-    void initMetricsKernels();
+    void initMetricsKernels(int algorithm);
 
     /** инициализирует контекст и все остальное */
     void initContext();

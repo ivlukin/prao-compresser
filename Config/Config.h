@@ -26,7 +26,13 @@ private:
     float leftPercentile;
     float rightPercentile;
     std::string outputPath;
+    int algorithm;
+
 public:
+    int getAlgorithm() const {
+        return algorithm;
+    }
+
     const std::string &getFileListPath() const {
         return fileListPath;
     }

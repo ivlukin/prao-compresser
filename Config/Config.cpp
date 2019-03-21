@@ -21,6 +21,7 @@ Config::Config(char *fileName) {
     assert(d.HasMember("leftPercentile"));
     assert(d.HasMember("rightPercentile"));
     assert(d.HasMember("outputPath"));
+    assert(d.HasMember("algorithm"));
 
     this->fileListPath = d["fileListPath"].GetString();
     this->calibrationListPath = d["calibrationListPath"].GetString();
@@ -29,4 +30,5 @@ Config::Config(char *fileName) {
     this->leftPercentile = d["leftPercentile"].GetFloat();
     this->rightPercentile = d["rightPercentile"].GetFloat();
     this->outputPath = d["outputPath"].GetString();
+    this->algorithm = d["algorithm"].GetInt();
 }
