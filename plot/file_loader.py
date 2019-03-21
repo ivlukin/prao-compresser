@@ -13,12 +13,11 @@ def __join(list_lists):
 
 def load(path):
     with open(path, 'rb') as fp:
-        data = fp.read()
+        data = fp.read(1024)
         numpar = int(data.split('\r\n')[0].split('\t')[1])
 
         header_length = sum([len(data.split('\r\n')[i]) + 2 for i in range(numpar + 1)])
 
-        del data
 
     time_started = time.time()
     as_float_array = array.array('f')
