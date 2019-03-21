@@ -5,5 +5,6 @@
   "starSeconds": 10.0,
   "leftPercentile": 0.02,
   "rightPercentile": 0.7,
-  "outputPath": "output"
+  "outputPath": "output",
+  "algorithm:": 1
 }
