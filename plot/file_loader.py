@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import array
+import itertools
 import os
 import time
 import logging
 import pandas as pd
 
-# 1. загрузить полный df из файла
 
-
-# 2. отфильтровать по определенной частоте
-# 3. слайдер для каналов
+def __join(list_lists):
+    return list(itertools.chain.from_iterable(list_lists))
 
 
 def load(path):
@@ -35,40 +34,36 @@ def load(path):
         header['nmetrics'] = 9  # TODO:
         header['nrays'] = 48  # TODO:
         header['nbands'] = 33  # TODO:
-
+        logging.debug(header)
         fp.seek(header_length)
         as_float_array.fromfile(fp, file_length / 4)
 
+    npoints = header['npoints']
+    nmetrics = header['nmetrics']
+    nrays = header['nrays']
+    nbands = header['nbands']
+
+    nfloats = len(as_float_array)
+
     struct = {
-        'metric_num': [None] * len(as_float_array),  # индекс метрики
-        'band_num': [None] * len(as_float_array),  # индекс частоты
-        'ray_num': [None] * len(as_float_array),  # индекс луча
-        'ts': [None] * len(as_float_array),  # условный индекс времени
+        'ts': list(range(npoints)) * (nfloats / npoints),
+        'ray_num': __join([[i] * npoints for i in range(nrays)]) * (nfloats / (nrays * npoints)),
+        'metric_num': __join([[i] * (npoints * nrays) for i in range(nmetrics)]) * (nfloats / (nrays * npoints * nmetrics)),
+        'band_num': __join([[i] * (npoints * nrays * nmetrics) for i in range(nbands)]),
+
+        'value': as_float_array
     }
 
-    # logging.debug('{0}\t{1}\t{2}\t{3}'.format('metric', 'band', 'ray', 'time'))
+    logging.debug(len(struct['ts']))
+    logging.debug(len(struct['ray_num']))
+    logging.debug(len(struct['metric_num']))
+    logging.debug(len(struct['band_num']))
 
-    floats = len(as_float_array)
-    for i in range(floats):
-        metric_num = i / (header['nbands'] * header['nrays'] * header['npoints'])
+    logging.debug(len(struct['value']))
 
-        yesterday_all_my_troubles = i % (header['nbands'] * header['nrays'] * header['npoints'])
-        band_num = yesterday_all_my_troubles / (header['nrays'] * header['npoints'])
-
-        seemed_so_far_away = yesterday_all_my_troubles % (header['nrays'] * header['npoints'])
-        ray_num = seemed_so_far_away / header['npoints']
-
-        ts = seemed_so_far_away % header['npoints']
-
-        struct['metric_num'][i] = metric_num
-        struct['band_num'][i] = band_num
-        struct['ray_num'][i] = ray_num
-        struct['ts'][i] = ts
-
-    struct['value'] = as_float_array
-
+    df = pd.DataFrame(struct)
     time_finished = time.time()
 
     logging.debug('{0:.2f}s elapsed'.format(time_finished - time_started))
 
-    return pd.DataFrame(struct)
+    return df
