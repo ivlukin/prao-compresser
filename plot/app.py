@@ -69,7 +69,7 @@ def run(dir_path):
         return
 
     logger.debug(glob.glob(os.path.expanduser(runtime['dir_path'] + "/*.processed")))
-    runtime['files'] = map(os.path.basename, glob.glob(os.path.expanduser(runtime['dir_path'] + "/*.processed")))
+    runtime['files'] = list(map(os.path.basename, glob.glob(os.path.expanduser(runtime['dir_path'] + "/*.processed"))))
     if len(runtime['files']) == 0:
         logger.error('List of .processed files is empty, exiting')
         return
