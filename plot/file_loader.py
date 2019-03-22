@@ -31,9 +31,10 @@ def load(path):
         header_raw = fp.read(header_length)
         header = dict(map(lambda x: (x.split('\t')[0], x.split('\t')[1]), filter(len, header_raw.split('\r\n'))))
         header['npoints'] = int(header['npoints'])
-        header['nmetrics'] = 9  # TODO:
-        header['nrays'] = 48  # TODO:
-        header['nbands'] = 33  # TODO:
+        header['nmetrics'] = 9
+        header['nrays'] = 48
+        # header['nbands'] = int(header['nbands']) + 1
+        header['nbands'] = 33
         logger.debug(header)
         fp.seek(header_length)
         as_float_array.fromfile(fp, file_length / 4)
@@ -53,6 +54,9 @@ def load(path):
 
         'value': as_float_array
     }
+
+    for key in struct:
+        logging.debug('%s %d', key, len(struct[key]))
 
     df = pd.DataFrame(struct)
     time_finished = time.time()
