@@ -16,6 +16,7 @@ metric_names = ['min', 'max', 'max_ind', 'average', 'median', 'variance', 'varia
 
 runtime_config = {}
 
+
 def make_slider(param_name, slider_id):
     idx = '{}_num'.format(param_name)
 
@@ -197,9 +198,15 @@ def update_figure_3(selected_band, selected_metric):
 @click.argument('dir_path', type=str)
 def run(dir_path):
     runtime_config['dir_path'] = os.path.expanduser(dir_path)
+
     if not os.path.exists(runtime_config['dir_path']):
         logger.error('Directory %s does not exist, exiting', runtime_config['dir_path'])
         return
+
+    logging.debug(glob.glob(os.path.expanduser(runtime_config['dir_path'] + "/*.processed")))
+    runtime_config['files'] = map(os.path.basename, glob.glob(os.path.expanduser(runtime_config['dir_path'] + "/*.processed")))
+    logging.debug(runtime_config['files'])
+
     app.run_server(debug=True)
 
 

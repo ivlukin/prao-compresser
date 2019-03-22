@@ -8,6 +8,7 @@ import pandas as pd
 
 logger = logging.getLogger()
 
+
 def __join(list_lists):
     return list(itertools.chain.from_iterable(list_lists))
 
