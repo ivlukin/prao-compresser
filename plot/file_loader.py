@@ -6,6 +6,7 @@ import time
 import logging
 import pandas as pd
 
+logger = logging.getLogger()
 
 def __join(list_lists):
     return list(itertools.chain.from_iterable(list_lists))
@@ -18,13 +19,12 @@ def load(path):
 
         header_length = sum([len(data.split('\r\n')[i]) + 2 for i in range(numpar + 1)])
 
-
     time_started = time.time()
     as_float_array = array.array('f')
 
     file_length = os.path.getsize(path) - header_length
 
-    logging.debug('File size w/o header is {} B'.format(file_length))
+    logger.debug('File size w/o header is {} B'.format(file_length))
 
     with open(path, 'rb') as fp:
         header_raw = fp.read(header_length)
@@ -33,7 +33,7 @@ def load(path):
         header['nmetrics'] = 9  # TODO:
         header['nrays'] = 48  # TODO:
         header['nbands'] = 33  # TODO:
-        logging.debug(header)
+        logger.debug(header)
         fp.seek(header_length)
         as_float_array.fromfile(fp, file_length / 4)
 
@@ -53,16 +53,9 @@ def load(path):
         'value': as_float_array
     }
 
-    logging.debug(len(struct['ts']))
-    logging.debug(len(struct['ray_num']))
-    logging.debug(len(struct['metric_num']))
-    logging.debug(len(struct['band_num']))
-
-    logging.debug(len(struct['value']))
-
     df = pd.DataFrame(struct)
     time_finished = time.time()
 
-    logging.debug('{0:.2f}s elapsed'.format(time_finished - time_started))
+    logger.debug('{0:.2f}s elapsed'.format(time_finished - time_started))
 
     return df

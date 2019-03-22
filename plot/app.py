@@ -6,10 +6,15 @@ import dash_html_components as html
 import plotly.graph_objs as go
 import logging
 import os
+import click
+import glob
 from file_loader import load
+
+logger = logging.getLogger()
 
 metric_names = ['min', 'max', 'max_ind', 'average', 'median', 'variance', 'variance_bounded', 'left_bound', 'right_bound']
 
+runtime_config = {}
 
 def make_slider(param_name, slider_id):
     idx = '{}_num'.format(param_name)
@@ -112,7 +117,7 @@ def update_figure_1(selected_ray, selected_band):
     return {
         'data': traces,
         'layout': go.Layout(
-            xaxis={'range': [0, 360]},  # TODO: 360 считать по df
+            xaxis={'range': [0, 360]},
             yaxis={'range': [0, 1000]},
             margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
             legend={'x': 0, 'y': 1},
@@ -140,8 +145,7 @@ def update_figure_2(selected_ray, selected_metric):
                 'size': 15,
                 'line': {'width': 0.5, 'color': 'white'}
             },
-            name=str(i,
-        )))
+            name=str(i)))
 
     return {
         'data': traces,
@@ -180,7 +184,7 @@ def update_figure_3(selected_band, selected_metric):
     return {
         'data': traces,
         'layout': go.Layout(
-            xaxis={'range': [0, 360]},  # TODO: 360 считать по df
+            xaxis={'range': [0, 360]},
             yaxis={'range': [0, 1000]},
             margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
             legend={'x': 0, 'y': 1},
@@ -189,5 +193,15 @@ def update_figure_3(selected_band, selected_metric):
     }
 
 
-if __name__ == '__main__':
+@click.command('run')
+@click.argument('dir_path', type=str)
+def run(dir_path):
+    runtime_config['dir_path'] = os.path.expanduser(dir_path)
+    if not os.path.exists(runtime_config['dir_path']):
+        logger.error('Directory %s does not exist, exiting', runtime_config['dir_path'])
+        return
     app.run_server(debug=True)
+
+
+if __name__ == '__main__':
+    run()
