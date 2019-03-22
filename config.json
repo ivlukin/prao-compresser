@@ -6,5 +6,5 @@
   "leftPercentile": 0.02,
   "rightPercentile": 0.7,
   "outputPath": "output",
-  "algorithm:": 1
+  "algorithm": 1
 }
