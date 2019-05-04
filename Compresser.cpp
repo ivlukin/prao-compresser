@@ -22,25 +22,36 @@ void Compresser::run() {
         MetricsContainer container(reader);
 
         int i = 1;
-        clock_t tStart, sum = 0;
+        clock_t tStart1, sum1 = 0;
+        clock_t tStart2, sum2 = 0;
         try {
             while (!reader->eof()) {
+                tStart2 = clock();
                 int count = reader->readNextPoints(data_reordered_buffer);
+                sum2 += clock() - tStart2;
                 MetricsCalculator
                         calculator = MetricsCalculator(context, data_reordered_buffer, reader->getPointSize(), count,
                                                        localWorkSize,
                                                        leftPercentile,
                                                        rightPercentile);
-                tStart = clock();
+                tStart1 = clock();
                 auto *metrics_buffer = calculator.calc();
                 container.addNewMetrics(metrics_buffer);
-                sum += clock() - tStart;
+                sum1 += clock() - tStart1;
 
                 if (i % 30 == 0)
                     std::cout << i << " arrays calculated..." << std::endl;
                 ++i;
             }
-            std::cout << "calculating work time: " << (float) (sum) / (float) CLOCKS_PER_SEC << "s"
+            std::cout << "calculating work time: " << (float) (sum1) / (float) CLOCKS_PER_SEC << "s"
+                      << std::endl;
+            std::cout << "reading and calibration work time: " << (float) (sum2) / (float) CLOCKS_PER_SEC << "s"
+                      << std::endl;
+            std::cout << "reading work time: " << (float) (reader->time_reading) / (float) CLOCKS_PER_SEC << "s"
+                      << std::endl;
+            std::cout << "calibrating work time: " << (float) (reader->time_calibrating) / (float) CLOCKS_PER_SEC << "s"
+                      << std::endl;
+            std::cout << "copying work time: " << (float) (reader->time_copying) / (float) CLOCKS_PER_SEC << "s"
                       << std::endl;
 
             container.saveToFile(outputPath + '\\' + item.filename + ".processed");

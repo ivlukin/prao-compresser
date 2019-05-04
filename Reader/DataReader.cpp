@@ -60,11 +60,17 @@ void DataReader::readNextPointsInternal(float *point, int full_count, int offset
             readNextPointsInternal(point, full_count, offset, points_available);
 
         buffer_pointer = 0;
+        int start = clock();
         in.read(buffer, BUFFER_SIZE);
+        time_reading += clock() - start;
+
+        start = clock();
         calibrateArrayPoints((float*)buffer, min(points_before_switch_calibration, BUFFER_SIZE / (size_per_point)));
+        time_calibrating += clock() - start;
 
         readNextPointsInternal(point, full_count, offset + points_available, local_count - points_available);
     } else {
+        int start = clock();
         auto * buff = (float *)&buffer[buffer_pointer];
         auto * point_ = &point[offset];
         for (int i = 0; i < floats_per_point; ++i)
@@ -75,6 +81,8 @@ void DataReader::readNextPointsInternal(float *point, int full_count, int offset
 
         points_before_switch_calibration -= local_count;
         count_read_points += local_count;
+
+        time_copying += clock() - start;
     }
 }
 

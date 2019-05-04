@@ -26,7 +26,6 @@ class DataReader{
     static constexpr int BUFFER_SIZE = 0x1000 * 33 * 7 * 3 * 4; // disk sector size + count of big channels + count of small channels + 48 modules + coef ~11MB
     int buffer_pointer = BUFFER_SIZE; // pointer for buffered read
     char *buffer = nullptr; // buffer for buffered read
-
     double timeChunk_duration_star = 0, timeChunk_duration_sun = 0; // seconds of chunk to be read in star time and in sun time
 
 
@@ -45,6 +44,9 @@ class DataReader{
     /// \param local_count count of points to read during current recursive call
     void readNextPointsInternal(float *point, int full_count, int offset, int local_count);
 public:
+    int time_reading = 0;
+    int time_calibrating = 0;
+    int time_copying = 0;
 
     /// \param filepath path to file from which read
     /// \param starSeconds_timeChunk_dur duration in star seconds of how many points will be read by call to readNextPoints
