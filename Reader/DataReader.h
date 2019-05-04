@@ -11,6 +11,7 @@
 
 #include <cstring>
 #include <cmath>
+#include <thread>
 
 class DataReader{
     bool is_header_parsed = false; // true if header has been parsed
@@ -25,11 +26,18 @@ class DataReader{
     ifstream in; // the stream from which reading is performed
     static constexpr int BUFFER_SIZE = 0x1000 * 33 * 7 * 3 * 4; // disk sector size + count of big channels + count of small channels + 48 modules + coef ~11MB
     int buffer_pointer = BUFFER_SIZE; // pointer for buffered read
-    char *buffer = nullptr; // buffer for buffered read
+    char *buffer = nullptr; // buffer for read for processor thread
+    char *buffer_second = nullptr; // buffer for read for reader thread
+    bool reading_started = false; // if the reading was started (if the reading thread was started)
+    bool swap_ready = false; // if the 2 buffers are ready for swapping
+    thread *reading_thread = nullptr;
+
     double timeChunk_duration_star = 0, timeChunk_duration_sun = 0; // seconds of chunk to be read in star time and in sun time
 
 
     void readHeader();
+    void prepareReading();
+    void readingThread();
     void realloc(double *& base, double const * from);
 
     /// \breif sets appropriate calibration data regard to count_read_points

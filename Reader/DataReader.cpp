@@ -9,7 +9,6 @@ DataReader::DataReader(string path, double starSeconds_timeChunk_dur) {
     if (!in.good())
         throw logic_error(path + " file not found");
     readHeader();
-    buffer = new char[BUFFER_SIZE];
 
     timeChunk_duration_star = starSeconds_timeChunk_dur;
     timeChunk_duration_sun = to_SunTime(starSeconds_timeChunk_dur);
@@ -17,7 +16,13 @@ DataReader::DataReader(string path, double starSeconds_timeChunk_dur) {
 }
 
 DataReader::~DataReader() {
-    delete(buffer);
+    if (buffer != nullptr)
+        delete(buffer);
+    if (buffer_second != nullptr){
+        delete(buffer_second);
+        reading_thread->join();
+        delete reading_thread;
+    }
     in.close();
 }
 
@@ -44,9 +49,13 @@ void DataReader::readNextPoints(float *point, int count) {
 void DataReader::readNextPointsInternal(float *point, int full_count, int offset, int local_count){
     if (!is_header_parsed) // may be disabled for perf purposes
         readHeader();
+    if (!reading_started)
+        prepareReading();
+    reading_started = true;
 
     if (count_read_points + local_count > dataHeader.npoints) // may be disabled for perf purposes
         throw logic_error("count of points is exceed");
+
 
     if (points_before_switch_calibration < local_count){
         int saved = points_before_switch_calibration;
@@ -59,13 +68,12 @@ void DataReader::readNextPointsInternal(float *point, int full_count, int offset
         if (points_available > 0)
             readNextPointsInternal(point, full_count, offset, points_available);
 
-        buffer_pointer = 0;
-        int start = clock();
-        in.read(buffer, BUFFER_SIZE);
-        time_reading += clock() - start;
+        swap_ready = true;
+        while (swap_ready)
+            this_thread::yield();
 
-        start = clock();
-        calibrateArrayPoints((float*)buffer, min(points_before_switch_calibration, BUFFER_SIZE / (size_per_point)));
+        int start = clock();
+        calibrateArrayPoints((float *) buffer, min(points_before_switch_calibration, BUFFER_SIZE / (size_per_point)));
         time_calibrating += clock() - start;
 
         readNextPointsInternal(point, full_count, offset + points_available, local_count - points_available);
@@ -81,7 +89,6 @@ void DataReader::readNextPointsInternal(float *point, int full_count, int offset
 
         points_before_switch_calibration -= local_count;
         count_read_points += local_count;
-
         time_copying += clock() - start;
     }
 }
@@ -95,6 +102,42 @@ void DataReader::readHeader(){
         size_per_point = floats_per_point * sizeof(float);
     }
 }
+
+void DataReader::prepareReading(){
+    buffer = new char[BUFFER_SIZE];
+    int start = clock();
+    in.read(buffer, BUFFER_SIZE); // initial read of first data chunk
+    time_reading += clock() - start;
+    buffer_pointer = 0;
+    if (!in.eof()) { // TODO: think about EOF
+        buffer_second = new char[BUFFER_SIZE];
+        reading_thread = new thread( [this] { readingThread(); } );
+    }
+}
+
+
+void DataReader::readingThread(){
+    int start = clock();
+    in.read(buffer_second, BUFFER_SIZE); // reading of next data
+    time_reading += clock() - start;
+
+    while (true){
+        while (!swap_ready)
+            this_thread::yield();
+
+        swap(buffer, buffer_second);
+        buffer_pointer = 0;
+        swap_ready = false;
+        if (in.eof()) // TODO: think about EOF
+            break;
+        start = clock();
+        in.read(buffer_second, BUFFER_SIZE); // reading of next data
+        time_reading += clock() - start;
+        //this_thread::sleep_for(chrono::milliseconds(250));
+
+    }
+}
+
 
 void DataReader::realloc(double *& base, double const * from){
     if (base != nullptr)
