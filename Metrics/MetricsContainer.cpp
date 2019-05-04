@@ -8,8 +8,11 @@
 void MetricsContainer::write_header(string file_path) {
     ofstream out(file_path);
 
-    out << "numpar\t" << 1 << endl;
+    DataHeader header = base_reader_->getDataHeader();
+    out << "numpar\t" << 4 << endl;
     out << "npoints\t" << storage.size() << endl;
+    out << "MJD_begin\t" << header.MJD_begin << endl;
+    out << "nbands\t" << header.nbands << endl;
 
     out.close();
 }
