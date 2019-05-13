@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(prao-compresser)
 set(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_FLAGS -pthread)
 find_package(OpenCL REQUIRED)
 add_executable(prao-compresser main.cpp
         Calibration/CalibrationDataInput.h Calibration/CalibrationDataInput.cpp
