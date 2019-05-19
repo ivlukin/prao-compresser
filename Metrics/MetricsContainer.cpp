@@ -13,6 +13,7 @@ void MetricsContainer::write_header(string file_path) {
     out << "npoints\t" << storage.size() << endl;
     out << "MJD_begin\t" << header.MJD_begin << endl;
     out << "nbands\t" << header.nbands << endl;
+    out << "nmetrics\t" << sizeof(metrics) / 4 << endl;
 
     out.close();
 }
