@@ -54,7 +54,7 @@ void Compresser::run() {
             std::cout << "copying work time: " << (float) (reader->time_copying) / (float) CLOCKS_PER_SEC << "s"
                       << std::endl;
 
-            container.saveToFile(outputPath + '\\' + item.filename + ".processed");
+            container.saveToFile(outputPath + getSystemSeparator() + item.filename + ".processed");
         }
         catch (logic_error e) {
             std::cout << e.what() << std::endl;

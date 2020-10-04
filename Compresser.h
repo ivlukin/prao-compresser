@@ -37,10 +37,19 @@ private:
      */
     OpenCLContext context{};
 
+    std::string getSystemSeparator() {
+#ifdef _WIN32
+        return "\\";
+#else
+        return "/";
+#endif
+    }
+
 
 public:
     Compresser() = default;
-    Compresser(char* configFile, OpenCLContext context);
+
+    Compresser(char *configFile, OpenCLContext context);
 
 
     /**
